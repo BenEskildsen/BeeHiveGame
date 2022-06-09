@@ -2,11 +2,9 @@
 
 /**
  *  Checklist:
- *    - add file to this directory
- *    - add here keyed by type in render order
- *    - add options and arguments to level editor
- *    - add any new properties to gameState initialization and updating
- *      function for them in the tickReducer
+ *    - add entity file to this directory
+ *    - add reference here keyed by type in render order
+ *    - add any new properties here and updating function in the tickReducer
  */
 
 const Entities = {
@@ -17,4 +15,10 @@ const Entities = {
   BEE: require('./bee.js');
 };
 
-module.exports = Entities;
+const Properties = {
+  isAgent: 'AGENT',
+  isNotAnimated: 'NOT_ANIMATED',
+  isMaturing: 'MATURING',
+};
+
+module.exports = {Entities, Properties};

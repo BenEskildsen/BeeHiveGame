@@ -1,10 +1,10 @@
 
-- initial state
-- level creation/loading
-- menu/game rendering
+- menu/game UI + rendering
 - tick reducer
 - controlled entity, hotkeys
-- view position, camera following  entity
+- view position, camera following entity
 - honey entity, pickup/putdown w/cells
+- turn into base game package?
 - egg/larva/pupa
 - workers w/roles and tasks
+- isometric cells
