@@ -1,0 +1,10 @@
+
+- initial state
+- level creation/loading
+- menu/game rendering
+- tick reducer
+- controlled entity, hotkeys
+- view position, camera following  entity
+- honey entity, pickup/putdown w/cells
+- egg/larva/pupa
+- workers w/roles and tasks
