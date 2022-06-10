@@ -1,5 +1,5 @@
 
-- menu/game UI + rendering
+- rendering
 - tick reducer
 - controlled entity, hotkeys
 - view position, camera following entity
