@@ -1,10 +1,15 @@
 
-- rendering
+- get rendering entities working
 - tick reducer
 - controlled entity, hotkeys
 - view position, camera following entity
+
 - honey entity, pickup/putdown w/cells
 - turn into base game package?
+  - rendering
 - egg/larva/pupa
 - workers w/roles and tasks
 - isometric cells
+./render.js:  // TODO: render held entity(s)
+./simulation/entityOperations.js: // TODO: placeholder
+./simulation/entityOperations.js: // TODO: placeholder

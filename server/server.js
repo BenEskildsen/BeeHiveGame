@@ -1,11 +1,11 @@
 
 const express = require('express')
 const urlParser = require('url');
-const {
-  recordVisit,
-  checkUsername,
-  getHighScores, writeScore,
-} = require('./middleware');
+// const {
+//   recordVisit,
+//   checkUsername,
+//   getHighScores, writeScore,
+// } = require('./middleware');
 
 const port = process.env.PORT || 8000;
 

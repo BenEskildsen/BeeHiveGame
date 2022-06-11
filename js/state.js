@@ -1,5 +1,7 @@
 // @flow
 
+const {Entities, Properties} = require('./entities/registry');
+
 const initState = (): State => {
   return {
     screen: 'LOBBY',
@@ -8,27 +10,32 @@ const initState = (): State => {
   };
 };
 
-const initGameState: (): Game => {
+const initGameState = (): Game => {
   const game = {
     time: 0,
     tickInterval: null,
-    level: string,
+    level: '',
 
     viewWidth: 50,
     viewHeight: 50,
-    viewPos: {x: 0, y: 0};
+    viewPos: {x: 0, y: 0},
 
     gridWidth: 50,
     gridHeight: 50,
 
-    nextID: 1
+    nextID: 1,
     entities: {},
-    // memoized "system"-level properties
-    AGENT: {}, // entities that do actions
-    NOT_ANIMATED: {}, // entities that don't animate every tick
-    MATURING: {}, // entities that mature over time into other entities
-                  // eg egg -> larva -> pupa, nectar -> honey
   };
+
+  for (const property in Properties) {
+    game[property] = {};
+  }
+
+  for (const entityType in Entities) {
+    game[entityType] = {};
+  }
+
+  return game;
 };
 
 module.exports = {

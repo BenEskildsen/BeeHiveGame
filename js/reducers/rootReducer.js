@@ -1,7 +1,6 @@
 // @flow
 
 const {initState, initGameState} = require('../state');
-const {loadLevel} = require('../levels');
 const {tickReducer} = require('./tickReducer');
 const {entityReducer} = require('./entityReducer');
 const {modalReducer} = require('./modalReducer');
@@ -35,13 +34,13 @@ const rootReducer = (state: State, action: Action): State => {
       if (!state.game) return state;
       return {
         ...state,
-        game: tickReducer(state.game, action);
+        game: tickReducer(state.game, action),
       };
     case 'CREATE_ENTITY':
       if (!state.game) return state;
       return {
         ...state,
-        game: entityReducer(state.game, action);
+        game: entityReducer(state.game, action),
       };
     case 'SET_MODAL':
     case 'DISMISS_MODAL':

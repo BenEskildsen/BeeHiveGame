@@ -1,6 +1,6 @@
 // @flow
 
-const loadLevel(store, levelName): void => {
+const loadLevel = (store, levelName): void => {
   const {dispatch} = store;
 
   dispatch({type: 'SET_CURRENT_LEVEL_NAME', levelName});
@@ -9,7 +9,7 @@ const loadLevel(store, levelName): void => {
   dispatch({
     type: 'CREATE_ENTITY',
     entityType: 'BACKGROUND',
-    args: [{x: 0, y: 0}, 50, 50, 0}],
+    args: [{x: 0, y: 0}, 50, 50, 0],
   });
 
   dispatch({

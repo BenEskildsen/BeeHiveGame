@@ -47,7 +47,7 @@ function Lobby(props): React.Node {
         onClick={() => {
           props.dispatch({
             type: 'SET_MODAL',
-            modal: (<PlayModal dispatch={props.dispatch} />),
+            modal: (<PlayModal store={store} dispatch={props.dispatch} />),
           });
         }}
       />
@@ -74,3 +74,5 @@ function PlayModal(props): React.Node {
     />
   );
 }
+
+module.exports = Main;

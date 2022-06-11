@@ -13,6 +13,9 @@ const addEntity = (game: Game, entity: Entity): Game => {
     }
   }
 
+  // add to type-based memo
+  game[entity.type][entity.id] = entity;
+
   return game;
 };
 
@@ -25,6 +28,9 @@ const removeEntity = (game: Game, entity: Entity): Game => {
       delete game[Properties[prop]];
     }
   }
+
+  // remove from type-based memo
+  delete game[entity.type][entity.id];
 
   return game;
 };

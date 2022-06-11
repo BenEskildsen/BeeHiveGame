@@ -8,11 +8,11 @@
  */
 
 const Entities = {
-  BACKGROUND: require('./background.js');
+  BACKGROUND: require('./background.js'),
 
-  CELL: require('./cell.js');
+  CELL: require('./cell.js'),
 
-  BEE: require('./bee.js');
+  BEE: require('./bee.js'),
 };
 
 const Properties = {
