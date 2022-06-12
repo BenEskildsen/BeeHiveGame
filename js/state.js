@@ -28,7 +28,7 @@ const initGameState = (): Game => {
   };
 
   for (const property in Properties) {
-    game[property] = {};
+    game[Properties[property]] = {};
   }
 
   for (const entityType in Entities) {

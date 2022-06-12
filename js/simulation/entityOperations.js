@@ -9,7 +9,7 @@ const addEntity = (game: Game, entity: Entity): Game => {
   // add to property-based memos
   for (const prop in Properties) {
     if (entity[prop]) {
-      game[Properties[prop]] = entity;
+      game[Properties[prop]][entity.id] = entity;
     }
   }
 
@@ -25,7 +25,7 @@ const removeEntity = (game: Game, entity: Entity): Game => {
   // remove from property-based memos
   for (const prop in Properties) {
     if (entity[prop]) {
-      delete game[Properties[prop]];
+      delete game[Properties[prop]][entity.id];
     }
   }
 

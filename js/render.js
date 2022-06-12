@@ -1,5 +1,7 @@
 // @flow
 
+const {Entities, Properties} = require('./entities/registry');
+
 let cur = null;
 let prevTime = 0;
 let msAvg = 0;
@@ -58,8 +60,8 @@ const renderView = (canvas, ctx, game, dims): void => {
   // scale world to the canvas
   ctx.save();
   ctx.scale(
-    pxWidth / viewWidth,
-    pxHeight / viewHeight,
+    pxWidth,
+    pxHeight,
   );
   ctx.lineWidth = px;
   ctx.translate(-1 * viewPos.x, -1 * viewPos.y);

@@ -95,7 +95,7 @@ var render = function render(ctx, game, bee) {
   ctx.translate(-width / 2, -height / 2);
 
   // draw
-  ctx.fillColor = 'yellow';
+  ctx.fillStyle = 'yellow';
   ctx.fillRect(0, 0, width, height);
 
   ctx.restore();
@@ -227,6 +227,17 @@ var loadLevel = function loadLevel(store, levelName) {
     type: 'CREATE_ENTITY',
     entityType: 'CELL',
     args: [{ x: 13, y: 13 }]
+  });
+
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'CELL',
+    args: [{ x: 1, y: 1 }]
+  });
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'CELL',
+    args: [{ x: 49, y: 49 }]
   });
 };
 
@@ -365,6 +376,8 @@ var _require2 = require('../render'),
 var _require3 = require('../entities/registry'),
     Entities = _require3.Entities;
 
+var MS_PER_TICK = 16;
+
 var totalTime = 0;
 var tickReducer = function tickReducer(game, action) {
   switch (action.type) {
@@ -381,7 +394,7 @@ var tickReducer = function tickReducer(game, action) {
           // HACK: store is only available via window
           function () {
             return store.dispatch({ type: 'TICK' });
-          }, globalConfig.config.msPerTick)
+          }, MS_PER_TICK)
         });
       }
     case 'STOP_TICK':
@@ -637,6 +650,10 @@ module.exports = { tickReducer: tickReducer };
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+var _require = require('./entities/registry'),
+    Entities = _require.Entities,
+    Properties = _require.Properties;
+
 var cur = null;
 var prevTime = 0;
 var msAvg = 0;
@@ -699,7 +716,7 @@ var renderView = function renderView(canvas, ctx, game, dims) {
 
   // scale world to the canvas
   ctx.save();
-  ctx.scale(pxWidth / viewWidth, pxHeight / viewHeight);
+  ctx.scale(pxWidth, pxHeight);
   ctx.lineWidth = px;
   ctx.translate(-1 * viewPos.x, -1 * viewPos.y);
 
@@ -740,7 +757,7 @@ var onScreen = function onScreen(game, entity) {
 };
 
 module.exports = { render: render };
-},{}],12:[function(require,module,exports){
+},{"./entities/registry":4}],12:[function(require,module,exports){
 'use strict';
 
 var _require = require('../entities/registry'),
@@ -753,7 +770,7 @@ var addEntity = function addEntity(game, entity) {
   // add to property-based memos
   for (var prop in Properties) {
     if (entity[prop]) {
-      game[Properties[prop]] = entity;
+      game[Properties[prop]][entity.id] = entity;
     }
   }
 
@@ -769,7 +786,7 @@ var removeEntity = function removeEntity(game, entity) {
   // remove from property-based memos
   for (var prop in Properties) {
     if (entity[prop]) {
-      delete game[Properties[prop]];
+      delete game[Properties[prop]][entity.id];
     }
   }
 
@@ -826,7 +843,7 @@ var initGameState = function initGameState() {
   };
 
   for (var property in Properties) {
-    game[property] = {};
+    game[Properties[property]] = {};
   }
 
   for (var entityType in Entities) {
@@ -936,6 +953,7 @@ function PlayModal(props) {
         dispatch({ type: 'DISMISS_MODAL' });
         dispatch({ type: 'SET_SCREEN', screen: 'GAME' });
         loadLevel(store, 'testLevel');
+        dispatch({ type: 'START_TICK' });
       }
     }]
   });

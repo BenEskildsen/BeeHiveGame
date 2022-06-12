@@ -6,6 +6,7 @@ const {
 const {render} = require('../render');
 const {Entities} = require('../entities/registry');
 
+const MS_PER_TICK = 16;
 
 let totalTime = 0;
 const tickReducer = (game: Game, action: Action): GameState => {
@@ -22,7 +23,7 @@ const tickReducer = (game: Game, action: Action): GameState => {
         tickInterval: setInterval(
           // HACK: store is only available via window
           () => store.dispatch({type: 'TICK'}),
-          globalConfig.config.msPerTick,
+          MS_PER_TICK,
         ),
       };
     }

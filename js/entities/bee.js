@@ -60,7 +60,7 @@ const render = (ctx, game: Game, bee: Bee) => {
   ctx.translate(-width / 2, -height / 2);
 
   // draw
-  ctx.fillColor = 'yellow';
+  ctx.fillStyle = 'yellow';
   ctx.fillRect(0, 0, width, height);
 
   ctx.restore();

@@ -68,6 +68,7 @@ function PlayModal(props): React.Node {
             dispatch({type: 'DISMISS_MODAL'});
             dispatch({type: 'SET_SCREEN', screen: 'GAME'});
             loadLevel(store, 'testLevel');
+            dispatch({type: 'START_TICK'});
           },
         }
       ]}

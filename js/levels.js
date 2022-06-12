@@ -39,6 +39,17 @@ const loadLevel = (store, levelName): void => {
     args: [{x: 13, y: 13}],
   });
 
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'CELL',
+    args: [{x: 1, y: 1}],
+  });
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'CELL',
+    args: [{x: 49, y: 49}],
+  });
+
 
 };
 
