@@ -4,8 +4,15 @@ const {
   removeEntity, addEntity,
 } = require('../simulation/entityOperations');
 const {
+  makeAction, isActionTypeQueued,
+  entityStartCurrentAction,
+} = require('../simulation/actionOperations');
+const {
   add, subtract, equals, vectorTheta,
 } = require('bens_utils').vectors;
+const {
+  closeTo,
+} = require('bens_utils').helpers;
 const {render} = require('../render');
 const {Entities} = require('../entities/registry');
 
@@ -63,6 +70,7 @@ const doTick = (game: Game): Game => {
 
   // these are the ECS "systems"
   keepControlledMoving(game);
+  updateActors(game);
   // updateAgents(game);
   // updateViewPos(game, false /*don't clamp to world*/);
 
@@ -82,9 +90,6 @@ const doTick = (game: Game): Game => {
 const updateActors = (game): void => {
   let fn = () => {}
 
-  // see comment below
-  const notNextActors = {};
-
   for (const id in game.ACTOR) {
     const actor = game.entities[id];
     if (
@@ -96,22 +101,9 @@ const updateActors = (game): void => {
     }
 
     if (actor.isAgent) {
-      fn = agentDecideAction;
+      // fn = agentDecideAction;
     }
     stepAction(game, actor, fn);
-
-    if (actor.actions.length == 0) {
-      notNextActors[id] = true;
-    }
-  }
-
-  // the reason for deleting them like this instead of just
-  // tracking which ones should make it to the next tick, is that
-  // new entities can be added to the ACTOR queue inside of stepAction
-  // (e.g. an explosive killing another explosive) and they need
-  // to make it to the next time this function is called
-  for (const id in notNextActors) {
-    delete game.ACTOR[id];
   }
 }
 
@@ -165,7 +157,7 @@ const keepControlledMoving = (game: Game): void => {
     const nextPos = add(controlledEntity.position, moveDir);
     const nextTheta = vectorTheta(subtract(controlledEntity.position, nextPos));
     let entityAction = makeAction(
-      game, controlledEntity, 'MOVE', nextPos,
+      game, controlledEntity, 'MOVE', {nextPos},
     );
     if (!closeTo(nextTheta, controlledEntity.theta)) {
       if (controlledEntity.timeOnMove > 1) {
@@ -174,18 +166,17 @@ const keepControlledMoving = (game: Game): void => {
           {
             nextPos,
             nextTheta,
-            frameOffset: controlledEntity.frameOffset,
           },
         );
         controlledEntity.prevTheta = controlledEntity.theta;
       } else {
         entityAction = makeAction(
-          game, controlledEntity, 'TURN', nextTheta,
+          game, controlledEntity, 'TURN', {nextTheta},
         );
       }
     }
     controlledEntity.timeOnMove = 0;
-    queueAction(game, controlledEntity, entityAction);
+    controlledEntity.actions.push(entityAction);
   }
 }
 
@@ -246,16 +237,13 @@ const stepAction = (
   if (entity.actions == null || entity.actions.length == 0) return;
 
   let curAction = entity.actions[0];
-  const totalDuration = getDuration(game, entity, curAction.type);
-  if (
-    totalDuration - curAction.duration >= curAction.effectIndex &&
-    !curAction.effectDone
-  ) {
+
+  if (curAction.index >= curAction.effectIndex && !curAction.effectDone) {
     entityStartCurrentAction(game, entity);
-    curAction = entity.actions[0];
-  } else if (curAction.duration <= 0) {
+    curAction = entity.actions[0]; // curAction could change if it
+                                   // was cancelled and replaced
+  } else if (curAction.index >= curAction.duration) {
     const prevAction = entity.actions.shift();
-    entity.prevActionType = prevAction.type;
     curAction = entity.actions[0];
     if (curAction == null) {
       decisionFunction(game, entity);
@@ -265,8 +253,9 @@ const stepAction = (
       entityStartCurrentAction(game, entity);
     }
   }
+
   if (curAction != null) {
-    curAction.duration = Math.max(0, curAction.duration - game.timeSinceLastTick);
+    curAction.index += game.timeSinceLastTick;
   }
 }
 

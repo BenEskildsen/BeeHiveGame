@@ -2,12 +2,14 @@
 
 const config = {
   type: 'BEE',
+
   width: 1,
   height: 1,
   maxHold: 1,
   age: 0,
 
-  isAgent: true, // agents do actions
+  isActor: true,
+  isAgent: true,
   // action params
   MOVE: {
     duration: 45 * 4,
@@ -56,12 +58,16 @@ const render = (ctx, game: Game, bee: Bee) => {
 
   // rotate
   ctx.translate(x +  width / 2, y + height / 2);
-  ctx.rotate(theta);
+  ctx.rotate(theta - Math.PI / 2);
   ctx.translate(-width / 2, -height / 2);
 
   // draw
   ctx.fillStyle = 'yellow';
   ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, width / 4, height / 4); // left eye
+  ctx.fillRect(3 * width / 4, 0, width / 4, height / 4); // right eye
+  ctx.fillRect(3 * width / 8, 3 * height / 4, width / 4, height / 2); // stinger
 
   ctx.restore();
 };

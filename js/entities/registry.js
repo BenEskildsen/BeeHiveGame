@@ -16,8 +16,8 @@ const Entities = {
 };
 
 const Properties = {
-  isAgent: 'AGENT',
-  isNotAnimated: 'NOT_ANIMATED',
+  isActor: 'ACTOR', // actors do actions
+  isAgent: 'AGENT', // agents decide their own actions
   isMaturing: 'MATURING',
 };
 

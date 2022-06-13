@@ -2,7 +2,6 @@
 
 const config = {
   type: 'BACKGROUND',
-  isNotAnimated: true,
 };
 
 const make = (

@@ -1,5 +1,4 @@
 
-- controlled entity, hotkeys
 - view position, camera following entity
 
 - honey entity, pickup/putdown w/cells
@@ -11,5 +10,5 @@
 
 
 ./render.js:  // TODO: render held entity(s)
-./simulation/entityOperations.js: // TODO: placeholder
-./simulation/entityOperations.js: // TODO: placeholder
+./simulation/entityOperations.js: // TODO: placeholder for picking up
+./simulation/entityOperations.js: // TODO: placeholder for putting down
