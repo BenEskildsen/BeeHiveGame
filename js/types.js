@@ -8,7 +8,9 @@ type Action = {
   type: String,
   duration: number,
   index: number,
+  effectIndex: ?number,
   spriteOrder: Array<number>, // order in spritesheet
+  payload: Object,
 };
 
 // an entity is a thing in the game

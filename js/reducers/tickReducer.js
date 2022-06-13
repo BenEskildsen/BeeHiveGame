@@ -3,6 +3,9 @@
 const {
   removeEntity, addEntity,
 } = require('../simulation/entityOperations');
+const {
+  add, subtract, equals, vectorTheta,
+} = require('bens_utils').vectors;
 const {render} = require('../render');
 const {Entities} = require('../entities/registry');
 
@@ -51,6 +54,7 @@ const doTick = (game: Game): Game => {
   // initializations:
   if (game.time == 1) {
     game.prevTickTime = new Date().getTime();
+    game.controlledEntity = game.BEE[2];
     // game.focusedEntity = base;
   }
 
@@ -58,7 +62,7 @@ const doTick = (game: Game): Game => {
   game.timeSinceLastTick = curTickTime - game.prevTickTime;
 
   // these are the ECS "systems"
-  // keepControlledMoving(game);
+  keepControlledMoving(game);
   // updateAgents(game);
   // updateViewPos(game, false /*don't clamp to world*/);
 
@@ -112,15 +116,10 @@ const updateActors = (game): void => {
 }
 
 const updateAgents = (game): void => {
-	for (const id of game.AGENT) {
+	for (const id in game.AGENT) {
     const agent = game.entities[id];
-    if (agent == null) {
-      console.log("no agent with id", id);
-      continue;
-    }
     agent.age += game.timeSinceLastTick;
     agent.timeOnTask += game.timeSinceLastTick;
-    agent.prevHPAge += game.timeSinceLastTick;
 
     if (agent.actions.length == 0) {
       agentDecideAction(game, agent);
@@ -162,16 +161,11 @@ const keepControlledMoving = (game: Game): void => {
     !equals(moveDir, {x: 0, y: 0}) && !isActionTypeQueued(controlledEntity, 'MOVE', true)
     && !isActionTypeQueued(controlledEntity, 'MOVE_TURN', true)
     && !isActionTypeQueued(controlledEntity, 'TURN') // enables turning in place
-    && !isActionTypeQueued(controlledEntity, 'DASH')
   ) {
     const nextPos = add(controlledEntity.position, moveDir);
     const nextTheta = vectorTheta(subtract(controlledEntity.position, nextPos));
     let entityAction = makeAction(
-      game, controlledEntity, 'MOVE',
-      {
-        nextPos,
-        frameOffset: controlledEntity.frameOffset,
-      },
+      game, controlledEntity, 'MOVE', nextPos,
     );
     if (!closeTo(nextTheta, controlledEntity.theta)) {
       if (controlledEntity.timeOnMove > 1) {

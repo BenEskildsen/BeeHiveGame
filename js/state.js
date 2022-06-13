@@ -25,6 +25,13 @@ const initGameState = (): Game => {
 
     nextID: 1,
     entities: {},
+
+    hotKeys: {
+      onKeyDown: {},
+      onKeyPress: {},
+      onKeyUp: {},
+      keysDown: {},
+    },
   };
 
   for (const property in Properties) {
