@@ -807,6 +807,10 @@ var _require = require('./entities/registry'),
     Entities = _require.Entities,
     Properties = _require.Properties;
 
+var _require2 = require('./simulation/actionOperations'),
+    getInterpolatedPosition = _require2.getInterpolatedPosition,
+    getInterpolatedTheta = _require2.getInterpolatedTheta;
+
 var cur = null;
 var prevTime = 0;
 var msAvg = 0;
@@ -877,7 +881,10 @@ var renderView = function renderView(canvas, ctx, game, dims) {
   for (var entityType in Entities) {
     for (var id in game[entityType]) {
       var entity = game.entities[id];
-      renderEntity(ctx, game, entity);
+      renderEntity(ctx, game, _extends({}, entity, {
+        position: getInterpolatedPosition(entity),
+        theta: getInterpolatedTheta(entity)
+      }));
     }
   }
   ctx.restore();
@@ -910,7 +917,7 @@ var onScreen = function onScreen(game, entity) {
 };
 
 module.exports = { render: render };
-},{"./entities/registry":5}],14:[function(require,module,exports){
+},{"./entities/registry":5,"./simulation/actionOperations":14}],14:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -923,7 +930,8 @@ var _require$vectors = require('bens_utils').vectors,
     add = _require$vectors.add,
     subtract = _require$vectors.subtract,
     vectorTheta = _require$vectors.vectorTheta,
-    equals = _require$vectors.equals;
+    equals = _require$vectors.equals,
+    scale = _require$vectors.scale;
 
 var _require$helpers = require('bens_utils').helpers,
     closeTo = _require$helpers.closeTo,
@@ -1099,10 +1107,71 @@ var cancelAction = function cancelAction(game, entity) {
   entity.actions.shift();
 };
 
+//-------------------------------------------------------------------
+// Action Queue
+//-------------------------------------------------------------------
+
+var getInterpolatedPosition = function getInterpolatedPosition(entity) {
+  if (!entity.actions) return entity.position;
+  var action = entity.actions[0];
+
+  var pos = _extends({}, entity.position);
+
+  if (action == null) return pos;
+
+  switch (action.type) {
+    case 'MOVE_TURN':
+    case 'MOVE':
+      {
+        var diff = subtract(entity.position, entity.prevPosition);
+        var progress = action.index / action.duration;
+        pos = add(entity.prevPosition, scale(diff, progress));
+        break;
+      }
+  }
+  return pos;
+};
+
+var getInterpolatedTheta = function getInterpolatedTheta(entity) {
+  if (!entity.actions) return entity.theta;
+  var action = entity.actions[0];
+  var theta = entity.theta;
+  if (action == null) return theta;
+
+  switch (action.type) {
+    case 'MOVE_TURN':
+      {
+        var diff = entity.theta - entity.prevTheta;
+        if (Math.abs(diff) < 0.01) break;
+        if (Math.abs(diff) > Math.PI) {
+          var mult = diff < 0 ? 1 : -1;
+          diff = mult * (2 * Math.PI - Math.abs(diff));
+        }
+        var progress = Math.min(1, action.index * 3 / action.duration);
+        theta = progress * diff + entity.prevTheta;
+        break;
+      }
+    case 'TURN':
+      {
+        var _diff = entity.theta - entity.prevTheta;
+        if (Math.abs(_diff) > Math.PI) {
+          var _mult = _diff < 0 ? 1 : -1;
+          _diff = _mult * (2 * Math.PI - Math.abs(_diff));
+        }
+        var _progress = action.index / action.duration;
+        theta = _progress * _diff + entity.prevTheta;
+        break;
+      }
+  }
+  return theta;
+};
+
 module.exports = {
   makeAction: makeAction,
   isActionTypeQueued: isActionTypeQueued,
-  entityStartCurrentAction: entityStartCurrentAction
+  entityStartCurrentAction: entityStartCurrentAction,
+  getInterpolatedPosition: getInterpolatedPosition,
+  getInterpolatedTheta: getInterpolatedTheta
 };
 },{"./entityOperations":15,"bens_utils":43}],15:[function(require,module,exports){
 'use strict';

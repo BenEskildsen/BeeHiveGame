@@ -2,11 +2,12 @@
 - view position, camera following entity
 
 - honey entity, pickup/putdown w/cells
+- isometric cells
+
 - turn into base game package?
   - rendering
 - egg/larva/pupa
 - workers w/roles and tasks
-- isometric cells
 
 
 ./render.js:  // TODO: render held entity(s)

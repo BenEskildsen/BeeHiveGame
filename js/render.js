@@ -1,6 +1,9 @@
 // @flow
 
 const {Entities, Properties} = require('./entities/registry');
+const {
+  getInterpolatedPosition, getInterpolatedTheta,
+} = require('./simulation/actionOperations');
 
 let cur = null;
 let prevTime = 0;
@@ -70,7 +73,14 @@ const renderView = (canvas, ctx, game, dims): void => {
   for (const entityType in Entities) {
     for (const id in game[entityType]) {
       const entity = game.entities[id];
-      renderEntity(ctx, game, entity);
+      renderEntity(
+        ctx, game,
+        {
+          ...entity,
+          position: getInterpolatedPosition(entity),
+          theta: getInterpolatedTheta(entity),
+        },
+      );
     }
   }
   ctx.restore();
