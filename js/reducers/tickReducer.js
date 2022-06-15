@@ -8,11 +8,12 @@ const {
   entityStartCurrentAction,
 } = require('../simulation/actionOperations');
 const {
-  add, subtract, equals, vectorTheta,
+  add, subtract, equals, vectorTheta, scale,
 } = require('bens_utils').vectors;
 const {
   closeTo,
 } = require('bens_utils').helpers;
+const {clamp} = require('bens_utils').math;
 const {render} = require('../render');
 const {Entities} = require('../entities/registry');
 
@@ -62,7 +63,7 @@ const doTick = (game: Game): Game => {
   if (game.time == 1) {
     game.prevTickTime = new Date().getTime();
     game.controlledEntity = game.BEE[2];
-    // game.focusedEntity = base;
+    game.focusedEntity = game.BEE[2];
   }
 
   // game/frame timing
@@ -72,7 +73,7 @@ const doTick = (game: Game): Game => {
   keepControlledMoving(game);
   updateActors(game);
   // updateAgents(game);
-  // updateViewPos(game, false /*don't clamp to world*/);
+  updateViewPos(game, false /*don't clamp to world*/);
 
   render(game);
 
@@ -181,7 +182,9 @@ const keepControlledMoving = (game: Game): void => {
 }
 
 const updateViewPos = (
-  game: Game,clampToGrid: boolean,
+  game: Game,
+  // TODO: clampToGrid doesn't work without stuttering
+  clampToGrid: boolean,
 ): void => {
   let nextViewPos = {...game.viewPos};
   const focusedEntity = game.focusedEntity;
@@ -190,10 +193,9 @@ const updateViewPos = (
     const action = focusedEntity.actions[0];
     if (
       action != null &&
-      (action.type == 'MOVE' || action.type == 'DASH' || action.type == 'MOVE_TURN')
+      (action.type == 'MOVE' || action.type == 'MOVE_TURN')
     ) {
-      const index = getInterpolatedIndex(game, focusedEntity);
-      const duration = getDuration(game, focusedEntity, action.type);
+      const duration = action.duration;
       nextViewPos = add(
         nextViewPos,
         scale(moveDir, game.timeSinceLastTick/duration),
@@ -205,7 +207,7 @@ const updateViewPos = (
       };
       const diff = subtract(idealPos, nextViewPos);
       // NOTE: this allows smooth panning to correct view position
-      const duration = getDuration(game, focusedEntity, 'MOVE');
+      const duration = focusedEntity.MOVE.duration;
       nextViewPos = add(nextViewPos, scale(diff, 16/duration));
     }
   }

@@ -38,6 +38,7 @@ const make = (
 ): Bee => {
   return {
     ...config,
+    prevPosition: position,
     position,
     theta: 0,
     id: -1, // NOTE: this should be set by the reducer

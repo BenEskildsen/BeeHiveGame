@@ -16,8 +16,8 @@ const initGameState = (): Game => {
     tickInterval: null,
     level: '',
 
-    viewWidth: 50,
-    viewHeight: 50,
+    viewWidth: 25,
+    viewHeight: 25,
     viewPos: {x: 0, y: 0},
 
     gridWidth: 50,

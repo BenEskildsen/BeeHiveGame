@@ -1,8 +1,7 @@
 
-- view position, camera following entity
 
 - honey entity, pickup/putdown w/cells
-- isometric cells
+- hex grid
 
 - turn into base game package?
   - rendering
@@ -11,5 +10,7 @@
 
 
 ./render.js:  // TODO: render held entity(s)
+./simulation/actionOperations.js:  // TODO: implement canDoMove
 ./simulation/entityOperations.js: // TODO: placeholder for picking up
 ./simulation/entityOperations.js: // TODO: placeholder for putting down
+./reducers/tickReducer.js:  // TODO: clampToGrid doesn't work without stuttering

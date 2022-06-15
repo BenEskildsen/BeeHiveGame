@@ -202,6 +202,7 @@ var config = {
 
 var make = function make(position) {
   return _extends({}, config, {
+    prevPosition: position,
     position: position,
     theta: 0,
     id: -1, // NOTE: this should be set by the reducer
@@ -243,7 +244,7 @@ var render = function render(ctx, game, bee) {
 
 module.exports = { config: config, make: make, render: render };
 },{}],4:[function(require,module,exports){
-"use strict";
+'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -265,7 +266,32 @@ var make = function make(position) {
 var render = function render(ctx, game, cell) {
   ctx.save();
   ctx.fillStyle = "orange";
-  ctx.fillRect(cell.position.x, cell.position.y, cell.width, cell.height);
+  // ctx.fillRect(
+  //   cell.position.x, cell.position.y,
+  //   cell.width, cell.height,
+  // );
+
+  var _cell$position = cell.position,
+      x = _cell$position.x,
+      y = _cell$position.y;
+  var width = cell.width,
+      height = cell.height;
+
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 0.1;
+
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + width / 2, y - height / 3);
+  ctx.lineTo(x + width, y);
+  ctx.lineTo(x + width, y + height);
+  ctx.lineTo(x + width / 2, y + height + height / 3);
+  ctx.lineTo(x, y + height);
+
+  ctx.closePath();
+  ctx.stroke();
+  ctx.fill();
+
   ctx.restore();
 };
 
@@ -348,37 +374,86 @@ var loadLevel = function loadLevel(store, levelName) {
     args: [{ x: 10, y: 10 }]
   });
 
-  dispatch({
-    type: 'CREATE_ENTITY',
-    entityType: 'CELL',
-    args: [{ x: 11, y: 11 }]
-  });
-  dispatch({
-    type: 'CREATE_ENTITY',
-    entityType: 'CELL',
-    args: [{ x: 12, y: 11 }]
-  });
-  dispatch({
-    type: 'CREATE_ENTITY',
-    entityType: 'CELL',
-    args: [{ x: 12, y: 12 }]
-  });
-  dispatch({
-    type: 'CREATE_ENTITY',
-    entityType: 'CELL',
-    args: [{ x: 13, y: 13 }]
-  });
+  for (var y = 10; y < 18; y++) {
+    for (var x = 10; x < 20; x++) {
+      var adjX = y % 2 == 1 ? x + 0.5 : x;
+      dispatch({
+        type: 'CREATE_ENTITY',
+        entityType: 'CELL',
+        args: [{ x: adjX, y: y }]
+      });
+    }
+  }
 
-  dispatch({
-    type: 'CREATE_ENTITY',
-    entityType: 'CELL',
-    args: [{ x: 1, y: 1 }]
-  });
-  dispatch({
-    type: 'CREATE_ENTITY',
-    entityType: 'CELL',
-    args: [{ x: 49, y: 49 }]
-  });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 10.5, y: 11}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 11.5, y: 11}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 12.5, y: 11}],
+  // });
+
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 11, y: 12}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 12, y: 12}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 13, y: 12}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 14, y: 12}],
+  // });
+
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 10.5, y: 13}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 11.5, y: 13}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 12.5, y: 13}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 13.5, y: 13}],
+  // });
+
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 1.5, y: 1}],
+  // });
+  // dispatch({
+  //   type: 'CREATE_ENTITY',
+  //   entityType: 'CELL',
+  //   args: [{x: 49.5, y: 49}],
+  // });
+
 };
 
 module.exports = {
@@ -562,9 +637,12 @@ var _require$vectors = require('bens_utils').vectors,
     add = _require$vectors.add,
     subtract = _require$vectors.subtract,
     equals = _require$vectors.equals,
-    vectorTheta = _require$vectors.vectorTheta;
+    vectorTheta = _require$vectors.vectorTheta,
+    scale = _require$vectors.scale;
 
 var closeTo = require('bens_utils').helpers.closeTo;
+
+var clamp = require('bens_utils').math.clamp;
 
 var _require3 = require('../render'),
     render = _require3.render;
@@ -620,7 +698,7 @@ var doTick = function doTick(game) {
   if (game.time == 1) {
     game.prevTickTime = new Date().getTime();
     game.controlledEntity = game.BEE[2];
-    // game.focusedEntity = base;
+    game.focusedEntity = game.BEE[2];
   }
 
   // game/frame timing
@@ -630,7 +708,7 @@ var doTick = function doTick(game) {
   keepControlledMoving(game);
   updateActors(game);
   // updateAgents(game);
-  // updateViewPos(game, false /*don't clamp to world*/);
+  updateViewPos(game, false /*don't clamp to world*/);
 
   render(game);
 
@@ -730,9 +808,8 @@ var updateViewPos = function updateViewPos(game, clampToGrid) {
   if (focusedEntity) {
     var moveDir = subtract(focusedEntity.position, focusedEntity.prevPosition);
     var action = focusedEntity.actions[0];
-    if (action != null && (action.type == 'MOVE' || action.type == 'DASH' || action.type == 'MOVE_TURN')) {
-      var index = getInterpolatedIndex(game, focusedEntity);
-      var duration = getDuration(game, focusedEntity, action.type);
+    if (action != null && (action.type == 'MOVE' || action.type == 'MOVE_TURN')) {
+      var duration = action.duration;
       nextViewPos = add(nextViewPos, scale(moveDir, game.timeSinceLastTick / duration));
     } else if (action == null) {
       var idealPos = {
@@ -741,7 +818,7 @@ var updateViewPos = function updateViewPos(game, clampToGrid) {
       };
       var diff = subtract(idealPos, nextViewPos);
       // NOTE: this allows smooth panning to correct view position
-      var _duration = getDuration(game, focusedEntity, 'MOVE');
+      var _duration = focusedEntity.MOVE.duration;
       nextViewPos = add(nextViewPos, scale(diff, 16 / _duration));
     }
   }
@@ -1023,6 +1100,7 @@ var doMove = function doMove(game, entity, nextPos) {
 };
 
 var canDoMove = function canDoMove(game, entity, nextPos) {
+  // TODO: implement canDoMove
   return { result: true, reason: '' };
 };
 
@@ -1255,8 +1333,8 @@ var initGameState = function initGameState() {
     tickInterval: null,
     level: '',
 
-    viewWidth: 50,
-    viewHeight: 50,
+    viewWidth: 25,
+    viewHeight: 25,
     viewPos: { x: 0, y: 0 },
 
     gridWidth: 50,

@@ -96,6 +96,7 @@ const doMove = (game: Game, entity: Entity, nextPos: Vector): boolean => {
 }
 
 const canDoMove = (game, entity, nextPos) => {
+  // TODO: implement canDoMove
   return {result: true, reason: ''};
 };
 
