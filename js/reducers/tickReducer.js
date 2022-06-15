@@ -131,19 +131,43 @@ const updateAgents = (game): void => {
 const keepControlledMoving = (game: Game): void => {
   const controlledEntity = game.controlledEntity;
   if (!controlledEntity) return;
+
   const moveDir = {x: 0, y: 0};
-  if (game.hotKeys.keysDown.up) {
-    moveDir.y += 1;
-  }
-  if (game.hotKeys.keysDown.down) {
-    moveDir.y -= 1;
-  }
-  if (game.hotKeys.keysDown.left) {
+
+  // Standard rectangular controls:
+  // if (game.hotKeys.keysDown.up) {
+  //   moveDir.y += 1;
+  // }
+  // if (game.hotKeys.keysDown.down) {
+  //   moveDir.y -= 1;
+  // }
+  // if (game.hotKeys.keysDown.left) {
+  //   moveDir.x -= 1;
+  // }
+  // if (game.hotKeys.keysDown.right) {
+  //   moveDir.x += 1;
+  // }
+
+  // Hexagonal controls:
+  if (game.hotKeys.keysDown.A) {
     moveDir.x -= 1;
-  }
-  if (game.hotKeys.keysDown.right) {
+  } else if (game.hotKeys.keysDown.D) {
     moveDir.x += 1;
+  } else if (game.hotKeys.keysDown.W) {
+    moveDir.y -= 1;
+    moveDir.x -= 0.5;
+  } else if (game.hotKeys.keysDown.E) {
+    moveDir.y -= 1;
+    moveDir.x += 0.5;
+  } else if (game.hotKeys.keysDown.Z) {
+    moveDir.y += 1;
+    moveDir.x -= 0.5;
+  } else if (game.hotKeys.keysDown.X) {
+    moveDir.y += 1;
+    moveDir.x += 0.5;
   }
+
+
   if (!equals(moveDir, {x: 0, y: 0})) {
     controlledEntity.timeOnMove += 1;
   } else {

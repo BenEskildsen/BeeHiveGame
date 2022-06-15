@@ -67,6 +67,12 @@ const renderView = (canvas, ctx, game, dims): void => {
     pxHeight,
   );
   ctx.lineWidth = px;
+
+  // rotate
+  // ctx.translate(viewPos.x + viewWidth / 2, viewPos.y + viewHeight / 2);
+  // ctx.rotate(Math.PI / 4);
+  // ctx.translate(-viewWidth / 2, -viewHeight / 2);
+
   ctx.translate(-1 * viewPos.x, -1 * viewPos.y);
 
   // render entities

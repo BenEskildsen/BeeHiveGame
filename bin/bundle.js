@@ -112,6 +112,9 @@ var initKeyboardControlsDaemon = function initKeyboardControlsDaemon(store) {
 };
 
 var getUpDownLeftRight = function getUpDownLeftRight(ev) {
+  // TODO: getUpDownLeftRight should optionally exclude wasd
+  return null;
+
   var keyCode = ev.keyCode;
 
   if (keyCode === 87 || keyCode === 38 || keyCode === 119) {
@@ -384,76 +387,6 @@ var loadLevel = function loadLevel(store, levelName) {
       });
     }
   }
-
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 10.5, y: 11}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 11.5, y: 11}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 12.5, y: 11}],
-  // });
-
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 11, y: 12}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 12, y: 12}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 13, y: 12}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 14, y: 12}],
-  // });
-
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 10.5, y: 13}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 11.5, y: 13}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 12.5, y: 13}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 13.5, y: 13}],
-  // });
-
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 1.5, y: 1}],
-  // });
-  // dispatch({
-  //   type: 'CREATE_ENTITY',
-  //   entityType: 'CELL',
-  //   args: [{x: 49.5, y: 49}],
-  // });
-
 };
 
 module.exports = {
@@ -762,19 +695,42 @@ var updateAgents = function updateAgents(game) {
 var keepControlledMoving = function keepControlledMoving(game) {
   var controlledEntity = game.controlledEntity;
   if (!controlledEntity) return;
+
   var moveDir = { x: 0, y: 0 };
-  if (game.hotKeys.keysDown.up) {
-    moveDir.y += 1;
-  }
-  if (game.hotKeys.keysDown.down) {
-    moveDir.y -= 1;
-  }
-  if (game.hotKeys.keysDown.left) {
+
+  // Standard rectangular controls:
+  // if (game.hotKeys.keysDown.up) {
+  //   moveDir.y += 1;
+  // }
+  // if (game.hotKeys.keysDown.down) {
+  //   moveDir.y -= 1;
+  // }
+  // if (game.hotKeys.keysDown.left) {
+  //   moveDir.x -= 1;
+  // }
+  // if (game.hotKeys.keysDown.right) {
+  //   moveDir.x += 1;
+  // }
+
+  // Hexagonal controls:
+  if (game.hotKeys.keysDown.A) {
     moveDir.x -= 1;
-  }
-  if (game.hotKeys.keysDown.right) {
+  } else if (game.hotKeys.keysDown.D) {
     moveDir.x += 1;
+  } else if (game.hotKeys.keysDown.W) {
+    moveDir.y -= 1;
+    moveDir.x -= 0.5;
+  } else if (game.hotKeys.keysDown.E) {
+    moveDir.y -= 1;
+    moveDir.x += 0.5;
+  } else if (game.hotKeys.keysDown.Z) {
+    moveDir.y += 1;
+    moveDir.x -= 0.5;
+  } else if (game.hotKeys.keysDown.X) {
+    moveDir.y += 1;
+    moveDir.x += 0.5;
   }
+
   if (!equals(moveDir, { x: 0, y: 0 })) {
     controlledEntity.timeOnMove += 1;
   } else {
@@ -952,6 +908,12 @@ var renderView = function renderView(canvas, ctx, game, dims) {
   ctx.save();
   ctx.scale(pxWidth, pxHeight);
   ctx.lineWidth = px;
+
+  // rotate
+  // ctx.translate(viewPos.x + viewWidth / 2, viewPos.y + viewHeight / 2);
+  // ctx.rotate(Math.PI / 4);
+  // ctx.translate(-viewWidth / 2, -viewHeight / 2);
+
   ctx.translate(-1 * viewPos.x, -1 * viewPos.y);
 
   // render entities

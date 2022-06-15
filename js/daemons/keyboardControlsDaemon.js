@@ -110,6 +110,9 @@ const initKeyboardControlsDaemon = (store) => {
 }
 
 const getUpDownLeftRight = (ev) => {
+  // TODO: getUpDownLeftRight should optionally exclude wasd
+  return null;
+
   const keyCode = ev.keyCode;
 
   if (keyCode === 87 || keyCode === 38 || keyCode === 119) {
