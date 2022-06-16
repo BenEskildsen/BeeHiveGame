@@ -1,6 +1,8 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
+var NO_WASD = true;
+
 var initKeyboardControlsDaemon = function initKeyboardControlsDaemon(store) {
   var dispatch = store.dispatch;
 
@@ -11,7 +13,7 @@ var initKeyboardControlsDaemon = function initKeyboardControlsDaemon(store) {
   document.onkeydown = function (ev) {
     var state = store.getState();
     if (state.game == null) return;
-    var dir = getUpDownLeftRight(ev);
+    var dir = getUpDownLeftRight(ev, NO_WASD);
     if (dir != null) {
       if (state.game.hotKeys.onKeyDown[dir] != null) {
         state.game.hotKeys.onKeyDown[dir](store);
@@ -45,7 +47,7 @@ var initKeyboardControlsDaemon = function initKeyboardControlsDaemon(store) {
   document.onkeypress = function (ev) {
     var state = store.getState();
     if (state.game == null) return;
-    var dir = getUpDownLeftRight(ev);
+    var dir = getUpDownLeftRight(ev, NO_WASD);
     if (dir != null) {
       if (state.game.hotKeys.onKeyPress[dir] != null) {
         state.game.hotKeys.onKeyPress[dir](store);
@@ -79,7 +81,7 @@ var initKeyboardControlsDaemon = function initKeyboardControlsDaemon(store) {
   document.onkeyup = function (ev) {
     var state = store.getState();
     if (state.game == null) return;
-    var dir = getUpDownLeftRight(ev);
+    var dir = getUpDownLeftRight(ev, NO_WASD);
     if (dir != null) {
       if (state.game.hotKeys.onKeyUp[dir] != null) {
         state.game.hotKeys.onKeyUp[dir](store);
@@ -111,11 +113,27 @@ var initKeyboardControlsDaemon = function initKeyboardControlsDaemon(store) {
   };
 };
 
-var getUpDownLeftRight = function getUpDownLeftRight(ev) {
-  // TODO: getUpDownLeftRight should optionally exclude wasd
-  return null;
-
+var getUpDownLeftRight = function getUpDownLeftRight(ev, noWASD) {
   var keyCode = ev.keyCode;
+
+  if (noWASD) {
+    if (keyCode === 38) {
+      return 'down';
+    }
+
+    if (keyCode === 40) {
+      return 'up';
+    }
+
+    if (keyCode === 37) {
+      return 'left';
+    }
+
+    if (keyCode === 39) {
+      return 'right';
+    }
+    return null;
+  }
 
   if (keyCode === 87 || keyCode === 38 || keyCode === 119) {
     return 'down';
@@ -713,23 +731,44 @@ var keepControlledMoving = function keepControlledMoving(game) {
   // }
 
   // Hexagonal controls:
-  if (game.hotKeys.keysDown.A) {
+  if (game.hotKeys.keysDown.F) {
     moveDir.x -= 1;
-  } else if (game.hotKeys.keysDown.D) {
+  } else if (game.hotKeys.keysDown.H) {
     moveDir.x += 1;
-  } else if (game.hotKeys.keysDown.W) {
+  } else if (game.hotKeys.keysDown.T) {
     moveDir.y -= 1;
     moveDir.x -= 0.5;
-  } else if (game.hotKeys.keysDown.E) {
+  } else if (game.hotKeys.keysDown.Y) {
     moveDir.y -= 1;
     moveDir.x += 0.5;
-  } else if (game.hotKeys.keysDown.Z) {
+  } else if (game.hotKeys.keysDown.V) {
     moveDir.y += 1;
     moveDir.x -= 0.5;
-  } else if (game.hotKeys.keysDown.X) {
+  } else if (game.hotKeys.keysDown.B) {
     moveDir.y += 1;
     moveDir.x += 0.5;
   }
+
+  // Rectangular controls that snap to hexes
+  // if (game.hotKeys.keysDown.up) {
+  //   moveDir.y += 1;
+  //   if (controlledEntity.y % 2 == 1) {
+  //     moveDir.y += 1; // NOTE: it doesn't work this way
+  //   }
+  // }
+  // if (game.hotKeys.keysDown.down) {
+  //   moveDir.y -= 1;
+  //   if (controlledEntity.y % 2 == 1) {
+  //     moveDir.y -= 1;
+  //   }
+  // }
+  // if (game.hotKeys.keysDown.left) {
+  //   moveDir.x -= 1;
+  // }
+  // if (game.hotKeys.keysDown.right) {
+  //   moveDir.x += 1;
+  // }
+
 
   if (!equals(moveDir, { x: 0, y: 0 })) {
     controlledEntity.timeOnMove += 1;

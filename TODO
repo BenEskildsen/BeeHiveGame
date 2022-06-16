@@ -1,6 +1,7 @@
 
 
 - honey entity, pickup/putdown w/cells
+  - highlight focused cell
 - hex grid
 
 - turn into base game package?
@@ -9,7 +10,6 @@
 - workers w/roles and tasks
 
 
-./daemons/keyboardControlsDaemon.js:  // TODO: getUpDownLeftRight should optionally exclude wasd
 ./render.js:  // TODO: render held entity(s)
 ./simulation/actionOperations.js:  // TODO: implement canDoMove
 ./simulation/entityOperations.js: // TODO: placeholder for picking up

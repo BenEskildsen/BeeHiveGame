@@ -11,6 +11,7 @@ const Entities = {
   BACKGROUND: require('./background.js'),
 
   CELL: require('./cell.js'),
+  HONEY: require('./honey.js'),
 
   BEE: require('./bee.js'),
 };

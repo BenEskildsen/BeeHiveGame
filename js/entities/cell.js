@@ -9,18 +9,25 @@ const config = {
 
 const make = (
   position: Vector,
+  holding: ?entity,
 ): Cell => {
   return {
     ...config,
     id: -1,
     position,
-    holding: null,
+    theta: 0,
+    holding,
   };
 };
 
 const render = (ctx, game, cell) => {
   ctx.save();
   ctx.fillStyle = "orange";
+  ctx.strokeStyle = 'white';
+  if (cell.holding != null && cell.holding.type == 'HONEY') {
+    ctx.fillStyle = "#FFDAB9";
+    ctx.strokeStyle = 'orange';
+  }
   // ctx.fillRect(
   //   cell.position.x, cell.position.y,
   //   cell.width, cell.height,
@@ -28,7 +35,6 @@ const render = (ctx, game, cell) => {
 
   const {x, y} = cell.position;
   const {width, height} = cell;
-  ctx.strokeStyle = 'white';
   ctx.lineWidth = 0.1;
 
   ctx.beginPath();

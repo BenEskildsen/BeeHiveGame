@@ -1,4 +1,6 @@
 
+const NO_WASD = true;
+
 const initKeyboardControlsDaemon = (store) => {
   const {dispatch} = store;
 
@@ -8,7 +10,7 @@ const initKeyboardControlsDaemon = (store) => {
   document.onkeydown = (ev) => {
     const state = store.getState();
     if (state.game == null) return;
-    const dir = getUpDownLeftRight(ev);
+    const dir = getUpDownLeftRight(ev, NO_WASD);
     if (dir != null) {
       if (state.game.hotKeys.onKeyDown[dir] != null) {
         state.game.hotKeys.onKeyDown[dir](store);
@@ -42,7 +44,7 @@ const initKeyboardControlsDaemon = (store) => {
   document.onkeypress = (ev) => {
     const state = store.getState();
     if (state.game == null) return;
-    const dir = getUpDownLeftRight(ev);
+    const dir = getUpDownLeftRight(ev, NO_WASD);
     if (dir != null) {
       if (state.game.hotKeys.onKeyPress[dir] != null) {
         state.game.hotKeys.onKeyPress[dir](store);
@@ -76,7 +78,7 @@ const initKeyboardControlsDaemon = (store) => {
   document.onkeyup = (ev) => {
     const state = store.getState();
     if (state.game == null) return;
-    const dir = getUpDownLeftRight(ev);
+    const dir = getUpDownLeftRight(ev, NO_WASD);
     if (dir != null) {
       if (state.game.hotKeys.onKeyUp[dir] != null) {
         state.game.hotKeys.onKeyUp[dir](store);
@@ -109,11 +111,27 @@ const initKeyboardControlsDaemon = (store) => {
 
 }
 
-const getUpDownLeftRight = (ev) => {
-  // TODO: getUpDownLeftRight should optionally exclude wasd
-  return null;
-
+const getUpDownLeftRight = (ev, noWASD) => {
   const keyCode = ev.keyCode;
+
+  if (noWASD) {
+    if (keyCode === 38) {
+      return 'down';
+    }
+
+    if (keyCode === 40) {
+      return 'up';
+    }
+
+    if (keyCode === 37) {
+      return 'left';
+    }
+
+    if (keyCode === 39) {
+      return 'right';
+    }
+    return null;
+  }
 
   if (keyCode === 87 || keyCode === 38 || keyCode === 119) {
     return 'down';

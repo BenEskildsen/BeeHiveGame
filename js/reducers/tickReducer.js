@@ -149,23 +149,43 @@ const keepControlledMoving = (game: Game): void => {
   // }
 
   // Hexagonal controls:
-  if (game.hotKeys.keysDown.A) {
+  if (game.hotKeys.keysDown.F) {
     moveDir.x -= 1;
-  } else if (game.hotKeys.keysDown.D) {
+  } else if (game.hotKeys.keysDown.H) {
     moveDir.x += 1;
-  } else if (game.hotKeys.keysDown.W) {
+  } else if (game.hotKeys.keysDown.T) {
     moveDir.y -= 1;
     moveDir.x -= 0.5;
-  } else if (game.hotKeys.keysDown.E) {
+  } else if (game.hotKeys.keysDown.Y) {
     moveDir.y -= 1;
     moveDir.x += 0.5;
-  } else if (game.hotKeys.keysDown.Z) {
+  } else if (game.hotKeys.keysDown.V) {
     moveDir.y += 1;
     moveDir.x -= 0.5;
-  } else if (game.hotKeys.keysDown.X) {
+  } else if (game.hotKeys.keysDown.B) {
     moveDir.y += 1;
     moveDir.x += 0.5;
   }
+
+  // Rectangular controls that snap to hexes
+  // if (game.hotKeys.keysDown.up) {
+  //   moveDir.y += 1;
+  //   if (controlledEntity.y % 2 == 1) {
+  //     moveDir.y += 1; // NOTE: it doesn't work this way
+  //   }
+  // }
+  // if (game.hotKeys.keysDown.down) {
+  //   moveDir.y -= 1;
+  //   if (controlledEntity.y % 2 == 1) {
+  //     moveDir.y -= 1;
+  //   }
+  // }
+  // if (game.hotKeys.keysDown.left) {
+  //   moveDir.x -= 1;
+  // }
+  // if (game.hotKeys.keysDown.right) {
+  //   moveDir.x += 1;
+  // }
 
 
   if (!equals(moveDir, {x: 0, y: 0})) {
