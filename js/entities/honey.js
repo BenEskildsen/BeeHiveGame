@@ -22,7 +22,12 @@ const make = (
 
 const render = (ctx, game, honey) => {
   ctx.save();
-  ctx.fillStyle = "#FFDAB9";
+  ctx.fillStyle = "orange";
+  ctx.fillRect(
+    honey.position.x, honey.position.y,
+    honey.width, honey.height,
+  );
+  ctx.restore();
 };
 
 module.exports = {

@@ -1,5 +1,7 @@
 // @flow
 
+const {Entities} = require('./entities/registry');
+
 const loadLevel = (store, levelName): void => {
   const {dispatch} = store;
 
@@ -21,10 +23,14 @@ const loadLevel = (store, levelName): void => {
   for (let y = 10; y < 18; y++) {
     for (let x = 10; x < 20; x++) {
       const adjX = y % 2 == 1 ? x + 0.5 : x;
+      let holding = null;
+      if (x == 12 && y == 12) {
+        holding = Entities.HONEY.make();
+      }
       dispatch({
         type: 'CREATE_ENTITY',
         entityType: 'CELL',
-        args: [{x: adjX, y}],
+        args: [{x: adjX, y}, holding],
       });
     }
   }

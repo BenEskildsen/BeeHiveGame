@@ -20,6 +20,14 @@ const addEntity = (game: Game, entity: Entity): Game => {
   // add to type-based memo
   game[entity.type][entity.id] = entity;
 
+  // NOTE: special case for creating with a held entity
+  if (entity.holding) {
+    if (entity.holding.id == -1 || !game.entities[entity.holding.id]) {
+      addEntity(game, entity.holding);
+    }
+    entity.holding.position = null;
+  }
+
   return game;
 };
 

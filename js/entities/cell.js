@@ -22,11 +22,11 @@ const make = (
 
 const render = (ctx, game, cell) => {
   ctx.save();
-  ctx.fillStyle = "orange";
-  ctx.strokeStyle = 'white';
+  ctx.fillStyle = "#FFDAB9";
+  ctx.strokeStyle = 'orange';
   if (cell.holding != null && cell.holding.type == 'HONEY') {
-    ctx.fillStyle = "#FFDAB9";
-    ctx.strokeStyle = 'orange';
+    ctx.fillStyle = "orange";
+    ctx.strokeStyle = 'white';
   }
   // ctx.fillRect(
   //   cell.position.x, cell.position.y,
