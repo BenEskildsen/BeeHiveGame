@@ -19,6 +19,7 @@ const Entities = {
 const Properties = {
   isActor: 'ACTOR', // actors do actions
   isAgent: 'AGENT', // agents decide their own actions
+  inGrid: 'IN_GRID', // entities that must be snapped to the grid
   isMaturing: 'MATURING',
 };
 

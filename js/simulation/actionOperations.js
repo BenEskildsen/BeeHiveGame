@@ -7,8 +7,10 @@ const {
   add, subtract, vectorTheta, equals, scale,
 } = require('bens_utils').vectors;
 const {
-  closeTo, thetaToDir,
+  closeTo,
+  // thetaToDir, // NOTE: not using because we're in a hex grid
 } = require('bens_utils').helpers;
+const {isFacing, thetaToDir} = require('../selectors');
 
 const entityStartCurrentAction = (
   game: Game, entity: Entity,
@@ -27,8 +29,7 @@ const entityStartCurrentAction = (
       break;
     case 'MOVE_TURN':
       if (!closeTo(entity.theta, curAction.payload.nextTheta)) {
-        entity.prevTheta = entity.theta;
-        entity.theta = curAction.payload.nextTheta;
+        rotateEntity(game, entity, curAction.payload.nextTheta);
       }
       // fall-through
     case 'MOVE': {
@@ -37,8 +38,8 @@ const entityStartCurrentAction = (
       break;
     }
     case 'TURN':
-      entity.prevTheta = entity.theta;
-      entity.theta = curAction.payload.nextTheta;
+      // TODO: turning left will briefly say couldn't find position in front for some reason
+      rotateEntity(game, entity, curAction.payload.nextTheta);
       break;
     case 'WAIT':
       // placeholder
@@ -89,8 +90,10 @@ const doMove = (game: Game, entity: Entity, nextPos: Vector): boolean => {
     return false;
   }
 
+  // Do the move
   entity.prevPosition = {...entity.position};
   entity.position = {...nextPos};
+  // TODO: move should check for inGrid entities
 
   return true;
 }
@@ -100,9 +103,9 @@ const canDoMove = (game, entity, nextPos) => {
   return {result: true, reason: ''};
 };
 
-const isFacing = (entity: Entity, position: Vector): boolean => {
-  const nextDir = thetaToDir(vectorTheta(subtract(entity.position, position)));
-  return nextDir == thetaToDir(entity.theta);
+const rotateEntity = (game, entity, nextTheta) => {
+  entity.prevTheta = entity.theta;
+  entity.theta = nextTheta;
 }
 
 //-------------------------------------------------------------------
@@ -164,66 +167,8 @@ const cancelAction = (game: Game, entity: Entity): void => {
   entity.actions.shift();
 };
 
-//-------------------------------------------------------------------
-// Action Queue
-//-------------------------------------------------------------------
-
-const getInterpolatedPosition = (entity): Vector => {
-  if (!entity.actions) return entity.position;
-  const action = entity.actions[0];
-
-  let pos = {...entity.position};
-
-  if (action == null) return pos;
-
-  switch (action.type) {
-    case 'MOVE_TURN':
-    case 'MOVE': {
-      const diff = subtract(entity.position, entity.prevPosition);
-      const progress = action.index / action.duration;
-      pos = add(entity.prevPosition, scale(diff, progress));
-      break;
-    }
-  }
-  return pos;
-};
-
-const getInterpolatedTheta = (entity: Entity) => {
-  if (!entity.actions) return entity.theta;
-  const action = entity.actions[0];
-  let theta = entity.theta;
-  if (action == null) return theta;
-
-  switch (action.type) {
-    case 'MOVE_TURN': {
-      let diff = entity.theta - entity.prevTheta;
-      if (Math.abs(diff) < 0.01) break;
-      if (Math.abs(diff) > Math.PI) {
-        const mult = diff < 0 ? 1 : -1;
-        diff = mult * (2 * Math.PI - Math.abs(diff));
-      }
-      const progress = Math.min(1, (action.index * 3) / action.duration);
-      theta = progress * diff + entity.prevTheta;
-      break
-    }
-    case 'TURN': {
-      let diff = entity.theta - entity.prevTheta;
-      if (Math.abs(diff) > Math.PI) {
-        const mult = diff < 0 ? 1 : -1;
-        diff = mult * (2 * Math.PI - Math.abs(diff));
-      }
-      const progress = action.index / action.duration;
-      theta = progress * diff + entity.prevTheta;
-      break;
-    }
-  }
-  return theta;
-};
-
 module.exports = {
   makeAction,
   isActionTypeQueued,
   entityStartCurrentAction,
-  getInterpolatedPosition,
-  getInterpolatedTheta,
 };

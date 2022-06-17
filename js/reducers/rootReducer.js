@@ -38,6 +38,7 @@ const rootReducer = (state: State, action: Action): State => {
         game: tickReducer(state.game, action),
       };
     case 'CREATE_ENTITY':
+    case 'QUEUE_ACTION':
       if (!state.game) return state;
       return {
         ...state,

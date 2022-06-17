@@ -2,6 +2,7 @@
 
 const config = {
   type: 'CELL',
+  inGrid: true,
   maxHold: 1,
   width: 1,
   height: 1,
@@ -41,9 +42,9 @@ const render = (ctx, game, cell) => {
   ctx.moveTo(x, y);
   ctx.lineTo(x + width / 2, y - height / 3);
   ctx.lineTo(x + width, y);
-  ctx.lineTo(x + width, y + height);
-  ctx.lineTo(x + width / 2, y + height + height / 3);
-  ctx.lineTo(x, y + height);
+  ctx.lineTo(x + width, y + height * 0.666);
+  ctx.lineTo(x + width / 2, y + height * 0.666 + height / 3);
+  ctx.lineTo(x, y + height * 0.666);
 
   ctx.closePath();
   ctx.stroke();

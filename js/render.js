@@ -2,8 +2,10 @@
 
 const {Entities, Properties} = require('./entities/registry');
 const {
-  getInterpolatedPosition, getInterpolatedTheta,
-} = require('./simulation/actionOperations');
+  onScreen,
+  getInterpolatedPosition,
+  getInterpolatedTheta,
+} = require('./selectors');
 
 let cur = null;
 let prevTime = 0;
@@ -104,15 +106,5 @@ const renderEntity = (ctx, game, entity) => {
   // TODO: render held entity(s)
 };
 
-const onScreen = (game, entity) => {
-  let {viewPos, viewWidth, viewHeight} = game;
-  const {position, width, height} = entity;
-  const {x, y} = position;
-
-  return (x + width) >= viewPos.x - 1 &&
-    (y + height) >= viewPos.y - 1 &&
-    x <= viewWidth + viewPos.x + 1 &&
-    y <= viewHeight + viewPos.y + 1;
-};
 
 module.exports = {render};

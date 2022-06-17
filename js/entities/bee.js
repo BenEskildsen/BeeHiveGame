@@ -1,5 +1,8 @@
 // @flow
 
+const {subtract} = require('bens_utils').vectors;
+const {getPositionInFront} = require('../selectors');
+
 const config = {
   type: 'BEE',
 
@@ -69,6 +72,37 @@ const render = (ctx, game: Game, bee: Bee) => {
   ctx.fillRect(0, 0, width / 4, height / 4); // left eye
   ctx.fillRect(3 * width / 4, 0, width / 4, height / 4); // right eye
   ctx.fillRect(3 * width / 8, 3 * height / 4, width / 4, height / 2); // stinger
+
+  // holding
+  if (bee.holding) {
+    if (bee.holding.type == 'HONEY') {
+      ctx.fillStyle = "orange";
+      ctx.strokeStyle = 'white';
+      ctx.fillRect(width / 3, 0, width / 3, height / 4); // left eye
+    }
+  }
+
+  ctx.restore();
+
+  ctx.save()
+
+  // space in front
+  const pos = getPositionInFront(game, bee);
+  // const pos = subtract(bee.position, posInFront);
+  const cellWidth = 1;
+  const cellHeight = 1;
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 0.03;
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+  ctx.lineTo(pos.x + cellWidth / 2, pos.y - cellHeight / 3);
+  ctx.lineTo(pos.x + cellWidth, pos.y);
+  ctx.lineTo(pos.x + cellWidth, pos.y + cellHeight * 0.666);
+  ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
+  ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
+
+  ctx.closePath();
+  ctx.stroke();
 
   ctx.restore();
 };

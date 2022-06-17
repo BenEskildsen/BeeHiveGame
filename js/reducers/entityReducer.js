@@ -12,6 +12,11 @@ const entityReducer = (game: Game, action: Action): Game => {
       addEntity(game, entity);
       return game;
     }
+    case 'QUEUE_ACTION': {
+      const {entityAction, entity} = action;
+      entity.actions.push(entityAction);
+      return game;
+    }
   }
 
   return game;

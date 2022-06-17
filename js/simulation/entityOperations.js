@@ -1,6 +1,8 @@
 // @flow
 
 const {Properties} = require('../entities/registry');
+const {getCellInFront} = require('../selectors');
+const {encodePosition} = require('bens_utils').helpers;
 
 // -----------------------------------------------------------------------
 // Adding and removing entities
@@ -28,6 +30,11 @@ const addEntity = (game: Game, entity: Entity): Game => {
     entity.holding.position = null;
   }
 
+  // NOTE: special case for entities in the grid
+  if (entity.inGrid && entity.position) {
+    game.grid[encodePosition(entity.position)].push(entity);
+  }
+
   return game;
 };
 
@@ -44,6 +51,17 @@ const removeEntity = (game: Game, entity: Entity): Game => {
   // remove from type-based memo
   delete game[entity.type][entity.id];
 
+  // NOTE: special case for entities in the grid
+  if (entity.inGrid && entity.position) {
+    let nextEntities = [];
+    for (const e of game.grid[encodePosition(entity.position)]) {
+      if (e.id != entity.id) {
+        nextEntities.push(e);
+      }
+    }
+    game.grid[encodePosition(entity.position)] = nextEntities;
+  }
+
   return game;
 };
 
@@ -51,12 +69,30 @@ const removeEntity = (game: Game, entity: Entity): Game => {
 // Pick up / put down
 // -----------------------------------------------------------------------
 
-const pickupEntity = (game: Game, entity: Entity) => {
- // TODO: placeholder for picking up
+const pickupEntity = (game: Game, entity: Entity): boolean => {
+  if (!entity) return false;
+  if (entity.holding) return false;
+
+  const targetCell = getCellInFront(game, entity);
+  if (!targetCell) return false;
+  if (!targetCell.holding) return false;
+
+  entity.holding = targetCell.holding;
+  targetCell.holding = null;
+  return true;
 }
 
-const putdownEntity = (game: Game, entity: Entity) => {
- // TODO: placeholder for putting down
+const putdownEntity = (game: Game, entity: Entity): boolean => {
+  if (!entity) return false;
+  if (!entity.holding) return false;
+
+  const targetCell = getCellInFront(game, entity);
+  if (!targetCell) return false;
+  if (targetCell.holding) return false;
+
+  targetCell.holding = entity.holding;
+  entity.holding = null;
+  return true;
 }
 
 

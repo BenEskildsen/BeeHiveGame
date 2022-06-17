@@ -1,17 +1,10 @@
 
-
-- honey entity, pickup/putdown w/cells
-  - highlight focused cell
-- hex grid
-
-- turn into base game package?
-  - rendering
 - egg/larva/pupa
 - workers w/roles and tasks
 
 
 ./render.js:  // TODO: render held entity(s)
+./simulation/actionOperations.js:      // TODO: turning left will briefly say couldn't find position in front for some reason
+./simulation/actionOperations.js:  // TODO: move should check for inGrid entities
 ./simulation/actionOperations.js:  // TODO: implement canDoMove
-./simulation/entityOperations.js: // TODO: placeholder for picking up
-./simulation/entityOperations.js: // TODO: placeholder for putting down
 ./reducers/tickReducer.js:  // TODO: clampToGrid doesn't work without stuttering
