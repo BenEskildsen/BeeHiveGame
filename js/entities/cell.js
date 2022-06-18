@@ -25,9 +25,15 @@ const render = (ctx, game, cell) => {
   ctx.save();
   ctx.fillStyle = "#FFDAB9";
   ctx.strokeStyle = 'orange';
-  if (cell.holding != null && cell.holding.type == 'HONEY') {
-    ctx.fillStyle = "orange";
-    ctx.strokeStyle = 'white';
+  if (cell.holding != null) {
+    if (cell.holding.type == 'HONEY') {
+      ctx.fillStyle = "orange";
+      ctx.strokeStyle = 'white';
+    }
+    if (cell.holding.type == 'PUPA') {
+      ctx.fillStyle = 'lightgray';
+      ctx.strokeStyle = 'white';
+    }
   }
   // ctx.fillRect(
   //   cell.position.x, cell.position.y,
@@ -49,6 +55,25 @@ const render = (ctx, game, cell) => {
   ctx.closePath();
   ctx.stroke();
   ctx.fill();
+
+  if (cell.holding != null) {
+    let size = 0;
+    if (cell.holding.type == 'EGG') {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+      size = width / 3;
+    }
+    if (cell.holding.type == 'LARVA') {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+      size = width * 0.8;
+    }
+    if (size > 0) {
+      ctx.beginPath();
+      ctx.arc(x + width / 2, y + width / 2, size, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+  }
 
   ctx.restore();
 };

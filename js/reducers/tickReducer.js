@@ -72,6 +72,7 @@ const doTick = (game: Game): Game => {
   // these are the ECS "systems"
   keepControlledMoving(game);
   updateActors(game);
+  updateMaturing(game);
   // updateAgents(game);
   updateViewPos(game, false /*don't clamp to world*/);
 
@@ -308,5 +309,27 @@ const stepAction = (
 //////////////////////////////////////////////////////////////////////////
 // Misc.
 //////////////////////////////////////////////////////////////////////////
+
+const updateMaturing = (game) => {
+  for (const id in game.MATURING) {
+    const entity = game.entities[id];
+    entity.age += game.timeSinceLastTick;
+
+    if (entity.age > game.maturationAge) {
+      if (entity.type == 'EGG') {
+        const larva = Entities.LARVA.make(entity.heldIn);
+        addEntity(game, larva);
+        entity.heldIn.holding = larva;
+        removeEntity(game, entity);
+      }
+      if (entity.type == 'PUPA') {
+        const bee = Entities.BEE.make({...entity.heldIn.position});
+        addEntity(game, bee);
+        entity.heldIn.holding = null;
+        removeEntity(game, entity);
+      }
+    }
+  }
+};
 
 module.exports = {tickReducer};

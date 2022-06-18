@@ -12,6 +12,9 @@ const Entities = {
 
   CELL: require('./cell.js'),
   HONEY: require('./honey.js'),
+  EGG: require('./egg.js'),
+  LARVA: require('./larva.js'),
+  PUPA: require('./pupa.js'),
 
   BEE: require('./bee.js'),
 };
@@ -19,7 +22,7 @@ const Entities = {
 const Properties = {
   isActor: 'ACTOR', // actors do actions
   isAgent: 'AGENT', // agents decide their own actions
-  inGrid: 'IN_GRID', // entities that must be snapped to the grid
+  // inGrid: 'IN_GRID', // entities that must be snapped to the grid, a special property
   isMaturing: 'MATURING',
 };
 

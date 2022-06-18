@@ -88,7 +88,19 @@ const putdownEntity = (game: Game, entity: Entity): boolean => {
 
   const targetCell = getCellInFront(game, entity);
   if (!targetCell) return false;
-  if (targetCell.holding) return false;
+  if (targetCell.holding) {
+    // NOTE: special case for feeding larva
+    if (targetCell.holding.type == 'LARVA' && entity.holding.type == 'HONEY') {
+      const pupa = Entities.PUPA.make(targetCell);
+      addEntity(game, pupa);
+      removeEntity(game, targetCell.holding);
+      targetCell.holding = pupa;
+
+      entity.holding = null;
+      return true;
+    }
+    return false;
+  }
 
   targetCell.holding = entity.holding;
   entity.holding = null;

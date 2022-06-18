@@ -44,6 +44,9 @@ const entityStartCurrentAction = (
     case 'WAIT':
       // placeholder
       break;
+    case 'LAY_EGG':
+      layEgg(game, entity);
+      break;
   }
 };
 
