@@ -5,7 +5,7 @@ const config = {
   width: 1,
   height: 1,
   isMaturing: true,
-  maturationAge: 10 * 1000;
+  maturationAge: 10 * 1000,
 };
 
 const make = (heldIn: Entity) => {

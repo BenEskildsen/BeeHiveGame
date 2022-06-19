@@ -61,17 +61,20 @@ const render = (ctx, game, cell) => {
     if (cell.holding.type == 'EGG') {
       ctx.fillStyle = 'white';
       ctx.strokeStyle = 'white';
-      size = width / 3;
+      size = width / 4;
     }
     if (cell.holding.type == 'LARVA') {
       ctx.fillStyle = 'white';
       ctx.strokeStyle = 'white';
-      size = width * 0.8;
+      size = width * 0.37;
     }
     if (size > 0) {
       ctx.beginPath();
       ctx.arc(x + width / 2, y + width / 2, size, 0, 2 * Math.PI);
       ctx.stroke();
+      if (cell.holding.type == 'LARVA') {
+        ctx.fill();
+      }
     }
   }
 

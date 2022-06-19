@@ -34,6 +34,11 @@ const config = {
     duration: 45 * 4,
     spriteOrder: [],
   },
+  LAY_EGG: {
+    duration: 45 * 7,
+    effectIndex: 3 * 45,
+    spriteOrder: [],
+  },
 };
 
 const make = (
@@ -80,31 +85,38 @@ const render = (ctx, game: Game, bee: Bee) => {
       ctx.strokeStyle = 'white';
       ctx.fillRect(width / 3, 0, width / 3, height / 4); // left eye
     }
+    if (bee.holding.type == 'EGG') {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+    }
   }
 
   ctx.restore();
 
-  ctx.save()
 
   // space in front
-  const pos = getPositionInFront(game, bee);
-  // const pos = subtract(bee.position, posInFront);
-  const cellWidth = 1;
-  const cellHeight = 1;
-  ctx.strokeStyle = 'red';
-  ctx.lineWidth = 0.03;
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
-  ctx.lineTo(pos.x + cellWidth / 2, pos.y - cellHeight / 3);
-  ctx.lineTo(pos.x + cellWidth, pos.y);
-  ctx.lineTo(pos.x + cellWidth, pos.y + cellHeight * 0.666);
-  ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
-  ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
+  if (game.controlledEntity && game.controlledEntity.id == bee.id) {
+    ctx.save();
 
-  ctx.closePath();
-  ctx.stroke();
+    const pos = getPositionInFront(game, bee);
+    // const pos = subtract(bee.position, posInFront);
+    const cellWidth = 1;
+    const cellHeight = 1;
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 0.03;
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(pos.x + cellWidth / 2, pos.y - cellHeight / 3);
+    ctx.lineTo(pos.x + cellWidth, pos.y);
+    ctx.lineTo(pos.x + cellWidth, pos.y + cellHeight * 0.666);
+    ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
+    ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
 
-  ctx.restore();
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
 };
 
 module.exports = {config, make, render};

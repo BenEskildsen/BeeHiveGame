@@ -315,7 +315,7 @@ const updateMaturing = (game) => {
     const entity = game.entities[id];
     entity.age += game.timeSinceLastTick;
 
-    if (entity.age > game.maturationAge) {
+    if (entity.age > entity.maturationAge) {
       if (entity.type == 'EGG') {
         const larva = Entities.LARVA.make(entity.heldIn);
         addEntity(game, larva);

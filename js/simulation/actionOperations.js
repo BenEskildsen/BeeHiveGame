@@ -1,7 +1,7 @@
 // @flow
 
 const {
-  pickupEntity, putdownEntity,
+  pickupEntity, putdownEntity, addEntity,
 } = require('./entityOperations');
 const {
   add, subtract, vectorTheta, equals, scale,
@@ -10,7 +10,8 @@ const {
   closeTo,
   // thetaToDir, // NOTE: not using because we're in a hex grid
 } = require('bens_utils').helpers;
-const {isFacing, thetaToDir} = require('../selectors');
+const {isFacing, thetaToDir, getCellInFront} = require('../selectors');
+const {Entities} = require('../entities/registry');
 
 const entityStartCurrentAction = (
   game: Game, entity: Entity,
@@ -110,6 +111,16 @@ const rotateEntity = (game, entity, nextTheta) => {
   entity.prevTheta = entity.theta;
   entity.theta = nextTheta;
 }
+
+const layEgg = (game, entity) => {
+  const targetCell = getCellInFront(game, entity);
+  if (!targetCell) return false;
+  if (targetCell.holding) return false;
+  const egg = Entities.EGG.make(targetCell);
+  addEntity(game, egg);
+  targetCell.holding = egg;
+  return true;
+};
 
 //-------------------------------------------------------------------
 // Action Queue

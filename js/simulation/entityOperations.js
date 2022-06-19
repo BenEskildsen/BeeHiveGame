@@ -1,6 +1,6 @@
 // @flow
 
-const {Properties} = require('../entities/registry');
+const {Entities, Properties} = require('../entities/registry');
 const {getCellInFront} = require('../selectors');
 const {encodePosition} = require('bens_utils').helpers;
 
@@ -78,6 +78,7 @@ const pickupEntity = (game: Game, entity: Entity): boolean => {
   if (!targetCell.holding) return false;
 
   entity.holding = targetCell.holding;
+  entity.holding.heldIn = entity;
   targetCell.holding = null;
   return true;
 }
@@ -103,6 +104,7 @@ const putdownEntity = (game: Game, entity: Entity): boolean => {
   }
 
   targetCell.holding = entity.holding;
+  targetCell.holding.heldIn = targetCell;
   entity.holding = null;
   return true;
 }

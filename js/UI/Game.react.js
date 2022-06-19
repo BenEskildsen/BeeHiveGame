@@ -50,6 +50,17 @@ function registerHotkeys(dispatch) {
       s.dispatch({type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction});
     }
   });
+
+  dispatch({
+    type: 'SET_HOTKEY', press: 'onKeyDown',
+    key: 'E',
+    fn: (s) => {
+      const game = s.getState().game;
+      if (!game.controlledEntity) return;
+      const entityAction = makeAction(game, game.controlledEntity, 'LAY_EGG', {});
+      s.dispatch({type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction});
+    }
+  });
 }
 
 module.exports = Game;
