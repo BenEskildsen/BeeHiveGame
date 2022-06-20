@@ -54,7 +54,14 @@ const render = (ctx, game, cell) => {
 
   ctx.closePath();
   ctx.stroke();
+  // ctx.fillStyle = 'orange';
   ctx.fill();
+
+  // ctx.beginPath();
+  // ctx.arc(x + width / 2, y + height / 2 - 0.2, width / 2, 0, 2 * Math.PI);
+  // ctx.closePath();
+  // ctx.fillStyle = "#FFDAB9";
+  // ctx.fill();
 
   if (cell.holding != null) {
     let size = 0;

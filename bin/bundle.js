@@ -384,7 +384,14 @@ var render = function render(ctx, game, cell) {
 
   ctx.closePath();
   ctx.stroke();
+  // ctx.fillStyle = 'orange';
   ctx.fill();
+
+  // ctx.beginPath();
+  // ctx.arc(x + width / 2, y + height / 2 - 0.2, width / 2, 0, 2 * Math.PI);
+  // ctx.closePath();
+  // ctx.fillStyle = "#FFDAB9";
+  // ctx.fill();
 
   if (cell.holding != null) {
     var size = 0;
@@ -424,7 +431,7 @@ var config = {
   width: 1,
   height: 1,
   isMaturing: true,
-  maturationAge: 10 * 1000
+  maturationAge: 45 * 1000
 };
 
 var make = function make(heldIn) {
@@ -519,7 +526,7 @@ var config = {
   width: 1,
   height: 1,
   isMaturing: true,
-  maturationAge: 10 * 1000,
+  maturationAge: 45 * 1000,
   isNotPickupAble: true
 };
 
@@ -1798,8 +1805,8 @@ var initGameState = function initGameState() {
     tickInterval: null,
     level: '',
 
-    viewWidth: 20,
-    viewHeight: 20,
+    viewWidth: 25,
+    viewHeight: 25,
     viewPos: { x: 0, y: 0 },
 
     gridWidth: 25,
