@@ -21,8 +21,8 @@ const initGameState = (): Game => {
     viewHeight: 25,
     viewPos: {x: 0, y: 0},
 
-    gridWidth: 50,
-    gridHeight: 50,
+    gridWidth: 25,
+    gridHeight: 25,
     grid: {},
 
     nextID: 1,

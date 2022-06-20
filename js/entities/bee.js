@@ -80,6 +80,7 @@ const render = (ctx, game: Game, bee: Bee) => {
 
   // holding
   if (bee.holding) {
+    ctx.lineWidth = 0.1;
     if (bee.holding.type == 'HONEY') {
       ctx.fillStyle = "orange";
       ctx.strokeStyle = 'white';
@@ -88,6 +89,19 @@ const render = (ctx, game: Game, bee: Bee) => {
     if (bee.holding.type == 'EGG') {
       ctx.fillStyle = 'white';
       ctx.strokeStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(width / 2, 0, 0.2, 0, 2 * Math.PI);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    if (bee.holding.type == 'LARVA') {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(width / 2, 0, 0.34, 0, 2 * Math.PI);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fill();
     }
   }
 

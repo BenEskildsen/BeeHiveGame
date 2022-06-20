@@ -1,10 +1,27 @@
 
-- egg/larva/pupa
-  - render held eggs/larva/pupa for bee
 - workers w/roles and tasks
+  - roles:
+    - standby
+      - random movement
+    - feeding larva
+      - track food need
+      - find honey and pick it up
+      - find larva and drop it off
+    - building cells
+      - assign areas for building
+      - go to area and do an action there
+    - scouting for food
+      - leave screen for certain amount of time
+      - come back (with certain probability) with info about food
+    - retrieving food
+      - leave screen for certain amount of time
+      - come back (with certain probability) with food
+  - role
+- other economics
+  - nectar -> honey
+  - additional process for getting honey
 
 
-./render.js:  // TODO: render held entity(s)
 ./simulation/actionOperations.js:      // TODO: turning left will briefly say couldn't find position in front for some reason
 ./simulation/actionOperations.js:  // TODO: move should check for inGrid entities
 ./simulation/actionOperations.js:  // TODO: implement canDoMove

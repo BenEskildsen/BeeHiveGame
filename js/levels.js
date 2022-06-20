@@ -20,11 +20,17 @@ const loadLevel = (store, levelName): void => {
     args: [{x: 10, y: 10}],
   });
 
-  for (let y = 10; y < 18; y++) {
-    for (let x = 10; x < 20; x++) {
+  for (let y = 10; y < 13; y++) {
+    for (let x = 10; x < 15; x++) {
       const adjX = y % 2 == 1 ? x + 0.5 : x;
       let holding = null;
       if (x == 12 && y == 12) {
+        holding = Entities.HONEY.make();
+      }
+      if (x == 12 && y == 11) {
+        holding = Entities.HONEY.make();
+      }
+      if (x == 11 && y == 11) {
         holding = Entities.HONEY.make();
       }
       dispatch({

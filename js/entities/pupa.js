@@ -6,6 +6,7 @@ const config = {
   height: 1,
   isMaturing: true,
   maturationAge: 10 * 1000,
+  isNotPickupAble: true,
 };
 
 const make = (heldIn: Entity) => {

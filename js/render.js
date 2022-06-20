@@ -102,8 +102,6 @@ const renderEntity = (ctx, game, entity) => {
   }
 
   Entities[entity.type].render(ctx, game, entity);
-
-  // TODO: render held entity(s)
 };
 
 

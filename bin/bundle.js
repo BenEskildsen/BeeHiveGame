@@ -272,36 +272,56 @@ var render = function render(ctx, game, bee) {
 
   // holding
   if (bee.holding) {
+    ctx.lineWidth = 0.1;
     if (bee.holding.type == 'HONEY') {
       ctx.fillStyle = "orange";
       ctx.strokeStyle = 'white';
       ctx.fillRect(width / 3, 0, width / 3, height / 4); // left eye
     }
+    if (bee.holding.type == 'EGG') {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(width / 2, 0, 0.2, 0, 2 * Math.PI);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    if (bee.holding.type == 'LARVA') {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(width / 2, 0, 0.34, 0, 2 * Math.PI);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fill();
+    }
   }
 
   ctx.restore();
 
-  ctx.save();
-
   // space in front
-  var pos = getPositionInFront(game, bee);
-  // const pos = subtract(bee.position, posInFront);
-  var cellWidth = 1;
-  var cellHeight = 1;
-  ctx.strokeStyle = 'red';
-  ctx.lineWidth = 0.03;
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
-  ctx.lineTo(pos.x + cellWidth / 2, pos.y - cellHeight / 3);
-  ctx.lineTo(pos.x + cellWidth, pos.y);
-  ctx.lineTo(pos.x + cellWidth, pos.y + cellHeight * 0.666);
-  ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
-  ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
+  if (game.controlledEntity && game.controlledEntity.id == bee.id) {
+    ctx.save();
 
-  ctx.closePath();
-  ctx.stroke();
+    var pos = getPositionInFront(game, bee);
+    // const pos = subtract(bee.position, posInFront);
+    var cellWidth = 1;
+    var cellHeight = 1;
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 0.03;
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.lineTo(pos.x + cellWidth / 2, pos.y - cellHeight / 3);
+    ctx.lineTo(pos.x + cellWidth, pos.y);
+    ctx.lineTo(pos.x + cellWidth, pos.y + cellHeight * 0.666);
+    ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
+    ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
 
-  ctx.restore();
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
 };
 
 module.exports = { config: config, make: make, render: render };
@@ -499,7 +519,8 @@ var config = {
   width: 1,
   height: 1,
   isMaturing: true,
-  maturationAge: 10 * 1000
+  maturationAge: 10 * 1000,
+  isNotPickupAble: true
 };
 
 var make = function make(heldIn) {
@@ -606,11 +627,17 @@ var loadLevel = function loadLevel(store, levelName) {
     args: [{ x: 10, y: 10 }]
   });
 
-  for (var y = 10; y < 18; y++) {
-    for (var x = 10; x < 20; x++) {
+  for (var y = 10; y < 13; y++) {
+    for (var x = 10; x < 15; x++) {
       var adjX = y % 2 == 1 ? x + 0.5 : x;
       var holding = null;
       if (x == 12 && y == 12) {
+        holding = Entities.HONEY.make();
+      }
+      if (x == 12 && y == 11) {
+        holding = Entities.HONEY.make();
+      }
+      if (x == 11 && y == 11) {
         holding = Entities.HONEY.make();
       }
       dispatch({
@@ -1224,8 +1251,6 @@ var renderEntity = function renderEntity(ctx, game, entity) {
   }
 
   Entities[entity.type].render(ctx, game, entity);
-
-  // TODO: render held entity(s)
 };
 
 module.exports = { render: render };
@@ -1710,6 +1735,7 @@ var pickupEntity = function pickupEntity(game, entity) {
   var targetCell = getCellInFront(game, entity);
   if (!targetCell) return false;
   if (!targetCell.holding) return false;
+  if (targetCell.holding.isNotPickupAble) return false;
 
   entity.holding = targetCell.holding;
   entity.holding.heldIn = entity;
@@ -1772,12 +1798,12 @@ var initGameState = function initGameState() {
     tickInterval: null,
     level: '',
 
-    viewWidth: 25,
-    viewHeight: 25,
+    viewWidth: 20,
+    viewHeight: 20,
     viewPos: { x: 0, y: 0 },
 
-    gridWidth: 50,
-    gridHeight: 50,
+    gridWidth: 25,
+    gridHeight: 25,
     grid: {},
 
     nextID: 1,

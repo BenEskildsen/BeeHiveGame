@@ -76,6 +76,7 @@ const pickupEntity = (game: Game, entity: Entity): boolean => {
   const targetCell = getCellInFront(game, entity);
   if (!targetCell) return false;
   if (!targetCell.holding) return false;
+  if (targetCell.holding.isNotPickupAble) return false;
 
   entity.holding = targetCell.holding;
   entity.holding.heldIn = entity;
