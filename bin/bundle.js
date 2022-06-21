@@ -228,6 +228,10 @@ var config = {
     duration: 45 * 7,
     effectIndex: 3 * 45,
     spriteOrder: []
+  },
+  WAIT: {
+    duration: 45 * 4,
+    spriteOrder: []
   }
 };
 
@@ -240,8 +244,7 @@ var make = function make(position) {
     actions: [],
     holding: null,
     holdingIDs: [], // treat holding like a stack
-    role: null,
-    task: 'WANDER',
+    task: { type: 'STANDBY' },
     dance: null
   });
 };
@@ -325,7 +328,7 @@ var render = function render(ctx, game, bee) {
 };
 
 module.exports = { config: config, make: make, render: render };
-},{"../selectors":18,"bens_utils":48}],4:[function(require,module,exports){
+},{"../selectors":18,"bens_utils":49}],4:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -609,7 +612,7 @@ function renderUI(store) {
     modal: state.modal
   }), document.getElementById('container'));
 }
-},{"./reducers/rootReducer":15,"./ui/Main.react":23,"react":55,"react-dom":52,"redux":56}],11:[function(require,module,exports){
+},{"./reducers/rootReducer":15,"./ui/Main.react":24,"react":56,"react-dom":53,"redux":57}],11:[function(require,module,exports){
 'use strict';
 
 var _require = require('./entities/registry'),
@@ -632,6 +635,12 @@ var loadLevel = function loadLevel(store, levelName) {
     type: 'CREATE_ENTITY',
     entityType: 'BEE',
     args: [{ x: 10, y: 10 }]
+  });
+
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'BEE',
+    args: [{ x: 11.5, y: 11 }]
   });
 
   for (var y = 10; y < 13; y++) {
@@ -696,7 +705,7 @@ var entityReducer = function entityReducer(game, action) {
 };
 
 module.exports = { entityReducer: entityReducer };
-},{"../entities/registry":9,"../simulation/entityOperations":20}],13:[function(require,module,exports){
+},{"../entities/registry":9,"../simulation/entityOperations":21}],13:[function(require,module,exports){
 'use strict';
 
 var hotKeysReducer = function hotKeysReducer(hotKeys, action) {
@@ -828,7 +837,7 @@ var rootReducer = function rootReducer(state, action) {
 };
 
 module.exports = { rootReducer: rootReducer };
-},{"../state":21,"./entityReducer":12,"./hotKeysReducer":13,"./modalReducer":14,"./tickReducer":16}],16:[function(require,module,exports){
+},{"../state":22,"./entityReducer":12,"./hotKeysReducer":13,"./modalReducer":14,"./tickReducer":16}],16:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -842,6 +851,9 @@ var _require2 = require('../simulation/actionOperations'),
     isActionTypeQueued = _require2.isActionTypeQueued,
     entityStartCurrentAction = _require2.entityStartCurrentAction;
 
+var _require3 = require('../simulation/agentOperations'),
+    agentDecideAction = _require3.agentDecideAction;
+
 var _require$vectors = require('bens_utils').vectors,
     add = _require$vectors.add,
     subtract = _require$vectors.subtract,
@@ -853,11 +865,11 @@ var closeTo = require('bens_utils').helpers.closeTo;
 
 var clamp = require('bens_utils').math.clamp;
 
-var _require3 = require('../render'),
-    render = _require3.render;
+var _require4 = require('../render'),
+    render = _require4.render;
 
-var _require4 = require('../entities/registry'),
-    Entities = _require4.Entities;
+var _require5 = require('../entities/registry'),
+    Entities = _require5.Entities;
 
 var MS_PER_TICK = 16;
 
@@ -915,9 +927,9 @@ var doTick = function doTick(game) {
 
   // these are the ECS "systems"
   keepControlledMoving(game);
+  updateAgents(game);
   updateActors(game);
   updateMaturing(game);
-  // updateAgents(game);
   updateViewPos(game, false /*don't clamp to world*/);
 
   render(game);
@@ -930,7 +942,7 @@ var doTick = function doTick(game) {
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Updating Agents
+// Updating Actors/Agents
 //////////////////////////////////////////////////////////////////////////
 
 var updateActors = function updateActors(game) {
@@ -943,7 +955,7 @@ var updateActors = function updateActors(game) {
     }
 
     if (actor.isAgent) {
-      // fn = agentDecideAction;
+      fn = agentDecideAction;
     }
     stepAction(game, actor, fn);
   }
@@ -1151,7 +1163,7 @@ var updateMaturing = function updateMaturing(game) {
 };
 
 module.exports = { tickReducer: tickReducer };
-},{"../entities/registry":9,"../render":17,"../simulation/actionOperations":19,"../simulation/entityOperations":20,"bens_utils":48}],17:[function(require,module,exports){
+},{"../entities/registry":9,"../render":17,"../simulation/actionOperations":19,"../simulation/agentOperations":20,"../simulation/entityOperations":21,"bens_utils":49}],17:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1295,9 +1307,12 @@ var getPositionInFront = function getPositionInFront(game, entity) {
   return entity.position;
 };
 
+var getNeighboringPositions = function getNeighboringPositions(game, entity) {
+  return [add(entity.position, { x: -1, y: 0 }), add(entity.position, { x: -0.5, y: -1 }), add(entity.position, { x: 0.5, y: -1 }), add(entity.position, { x: 1, y: 0 }), add(entity.position, { x: 0.5, y: 1 }), add(entity.position, { x: -0.5, y: 1 })];
+};
+
 var getCellInFront = function getCellInFront(game, entity) {
   var pos = getPositionInFront(game, entity);
-  console.log(pos, encodePosition(pos), game.grid[encodePosition(pos)]);
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
@@ -1413,13 +1428,14 @@ var getInterpolatedTheta = function getInterpolatedTheta(entity) {
 module.exports = {
   getPositionInFront: getPositionInFront,
   getCellInFront: getCellInFront,
+  getNeighboringPositions: getNeighboringPositions,
   onScreen: onScreen,
   isFacing: isFacing,
   thetaToDir: thetaToDir,
   getInterpolatedPosition: getInterpolatedPosition,
   getInterpolatedTheta: getInterpolatedTheta
 };
-},{"bens_utils":48}],19:[function(require,module,exports){
+},{"bens_utils":49}],19:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -1521,7 +1537,7 @@ var doMove = function doMove(game, entity, nextPos) {
       cancelAction(game, entity);
       entity.actions.unshift(makeAction(game, entity, 'MOVE_TURN', { nextTheta: nextTheta, nextPos: nextPos }));
     } else {
-      entity.actions.unshift(makeAction(game, entity, 'TURN', nextTheta));
+      stackAction(game, entity, makeAction(game, entity, 'TURN', { nextTheta: nextTheta }));
     }
     entityStartCurrentAction(game, entity);
     return false;
@@ -1611,6 +1627,12 @@ var isActionTypeQueued = function isActionTypeQueued(entity, actionType, almostD
   return false;
 };
 
+var stackAction = function stackAction(game, entity, action) {
+  entity.actions[0].index = 0;
+  entity.actions[0].effectDone = false;
+  entity.actions.unshift(action);
+};
+
 var cancelAction = function cancelAction(game, entity) {
   if (entity.actions.length == 0) return;
 
@@ -1636,7 +1658,53 @@ module.exports = {
   isActionTypeQueued: isActionTypeQueued,
   entityStartCurrentAction: entityStartCurrentAction
 };
-},{"../entities/registry":9,"../selectors":18,"./entityOperations":20,"bens_utils":48}],20:[function(require,module,exports){
+},{"../entities/registry":9,"../selectors":18,"./entityOperations":21,"bens_utils":49}],20:[function(require,module,exports){
+'use strict';
+
+var _require = require('../simulation/actionOperations'),
+    makeAction = _require.makeAction,
+    isActionTypeQueued = _require.isActionTypeQueued,
+    entityStartCurrentAction = _require.entityStartCurrentAction;
+
+var _require$stochastic = require('bens_utils').stochastic,
+    oneOf = _require$stochastic.oneOf,
+    weightedOneOf = _require$stochastic.weightedOneOf;
+
+var _require2 = require('../selectors'),
+    getNeighboringPositions = _require2.getNeighboringPositions;
+
+var agentDecideAction = function agentDecideAction(game, agent) {
+  if (game.controlledEntity && game.controlledEntity.id == agent.id) return;
+
+  if (agent.type != 'BEE') {
+    return; // placeholder
+  }
+  var bee = agent;
+  switch (bee.task.type) {
+    case 'STANDBY':
+      {
+        if (Math.random() < 0.8) {
+          bee.actions.push(makeAction(game, bee, 'WAIT', {}));
+        } else {
+          var nextPos = oneOf(getNeighboringPositions(game, bee));
+          bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
+        }
+      }
+    case 'FEED_LARVA':
+      {}
+    case 'BUILD_CELL':
+      {}
+    case 'SCOUT':
+      {}
+    case 'RETRIEVE_FOOD':
+      {}
+  }
+};
+
+module.exports = {
+  agentDecideAction: agentDecideAction
+};
+},{"../selectors":18,"../simulation/actionOperations":19,"bens_utils":49}],21:[function(require,module,exports){
 'use strict';
 
 var _require = require('../entities/registry'),
@@ -1782,7 +1850,7 @@ module.exports = {
   pickupEntity: pickupEntity,
   putdownEntity: putdownEntity
 };
-},{"../entities/registry":9,"../selectors":18,"bens_utils":48}],21:[function(require,module,exports){
+},{"../entities/registry":9,"../selectors":18,"bens_utils":49}],22:[function(require,module,exports){
 'use strict';
 
 var _require = require('./entities/registry'),
@@ -1845,7 +1913,7 @@ var initGameState = function initGameState() {
 module.exports = {
   initState: initState, initGameState: initGameState
 };
-},{"./entities/registry":9,"bens_utils":48}],22:[function(require,module,exports){
+},{"./entities/registry":9,"bens_utils":49}],23:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -1924,7 +1992,7 @@ function registerHotkeys(dispatch) {
 }
 
 module.exports = Game;
-},{"../daemons/keyboardControlsDaemon":1,"../simulation/actionOperations":19,"bens_ui_components":41,"react":55}],23:[function(require,module,exports){
+},{"../daemons/keyboardControlsDaemon":1,"../simulation/actionOperations":19,"bens_ui_components":42,"react":56}],24:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -2003,7 +2071,7 @@ function PlayModal(props) {
 }
 
 module.exports = Main;
-},{"../levels":11,"./Game.react":22,"bens_ui_components":41,"react":55}],24:[function(require,module,exports){
+},{"../levels":11,"./Game.react":23,"bens_ui_components":42,"react":56}],25:[function(require,module,exports){
 function _defineProperty(obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
@@ -2020,7 +2088,7 @@ function _defineProperty(obj, key, value) {
 }
 
 module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var defineProperty = require("./defineProperty.js");
 
 function ownKeys(object, enumerableOnly) {
@@ -2050,7 +2118,7 @@ function _objectSpread2(target) {
 }
 
 module.exports = _objectSpread2, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./defineProperty.js":24}],26:[function(require,module,exports){
+},{"./defineProperty.js":25}],27:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -2144,7 +2212,7 @@ var AudioWidget = function AudioWidget(props) {
 };
 
 module.exports = AudioWidget;
-},{"./Button.react":27,"react":55}],27:[function(require,module,exports){
+},{"./Button.react":28,"react":56}],28:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -2231,7 +2299,7 @@ function Button(props) {
 }
 
 module.exports = Button;
-},{"react":55}],28:[function(require,module,exports){
+},{"react":56}],29:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -2367,7 +2435,7 @@ function withPropsChecker(WrappedComponent) {
 }
 
 module.exports = React.memo(Canvas);
-},{"react":55}],29:[function(require,module,exports){
+},{"react":56}],30:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -2407,7 +2475,7 @@ function Checkbox(props) {
 }
 
 module.exports = Checkbox;
-},{"react":55}],30:[function(require,module,exports){
+},{"react":56}],31:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -2427,7 +2495,7 @@ function Divider(props) {
 }
 
 module.exports = Divider;
-},{"react":55}],31:[function(require,module,exports){
+},{"react":56}],32:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -2468,7 +2536,7 @@ var Dropdown = function Dropdown(props) {
 };
 
 module.exports = Dropdown;
-},{"react":55}],32:[function(require,module,exports){
+},{"react":56}],33:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -2499,7 +2567,7 @@ var InfoCard = function InfoCard(props) {
 };
 
 module.exports = InfoCard;
-},{"react":55}],33:[function(require,module,exports){
+},{"react":56}],34:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -2583,7 +2651,7 @@ function Modal(props) {
 }
 
 module.exports = Modal;
-},{"./Button.react":27,"bens_utils":48,"react":55}],34:[function(require,module,exports){
+},{"./Button.react":28,"bens_utils":49,"react":56}],35:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -2673,7 +2741,7 @@ var submitValue = function submitValue(onChange, nextVal, onlyInt) {
 };
 
 module.exports = NumberField;
-},{"react":55}],35:[function(require,module,exports){
+},{"react":56}],36:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -3040,7 +3108,7 @@ var PlotWatcher = function PlotWatcher(props) {
 };
 
 module.exports = PlotWatcher;
-},{"./Button.react":27,"./Canvas.react":28,"react":55}],36:[function(require,module,exports){
+},{"./Button.react":28,"./Canvas.react":29,"react":56}],37:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -3124,7 +3192,7 @@ var quitGameModal = function quitGameModal(dispatch) {
 };
 
 module.exports = QuitButton;
-},{"./Button.react":27,"./Modal.react":33,"bens_utils":48,"react":55}],37:[function(require,module,exports){
+},{"./Button.react":28,"./Modal.react":34,"bens_utils":49,"react":56}],38:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -3213,7 +3281,7 @@ var RadioPicker = function (_React$Component) {
 }(React.Component);
 
 module.exports = RadioPicker;
-},{"react":55}],38:[function(require,module,exports){
+},{"react":56}],39:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -3283,7 +3351,7 @@ function Slider(props) {
 }
 
 module.exports = Slider;
-},{"./NumberField.react":34,"react":55}],39:[function(require,module,exports){
+},{"./NumberField.react":35,"react":56}],40:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -3410,7 +3478,7 @@ function Table(props) {
 }
 
 module.exports = Table;
-},{"./Button.react":27,"react":55}],40:[function(require,module,exports){
+},{"./Button.react":28,"react":56}],41:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -3499,7 +3567,7 @@ var plotReducer = function plotReducer(state, action) {
 };
 
 module.exports = { plotReducer: plotReducer };
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 
 module.exports = {
   AudioWidget: require('./bin/AudioWidget.react.js'),
@@ -3519,7 +3587,7 @@ module.exports = {
   Table: require('./bin/Table.react.js'),
 };
 
-},{"./bin/AudioWidget.react.js":26,"./bin/Button.react.js":27,"./bin/Canvas.react.js":28,"./bin/Checkbox.react.js":29,"./bin/Divider.react.js":30,"./bin/Dropdown.react.js":31,"./bin/InfoCard.react.js":32,"./bin/Modal.react.js":33,"./bin/NumberField.react.js":34,"./bin/Plot.react.js":35,"./bin/QuitButton.react.js":36,"./bin/RadioPicker.react.js":37,"./bin/Slider.react.js":38,"./bin/Table.react.js":39,"./bin/plotReducer.js":40}],42:[function(require,module,exports){
+},{"./bin/AudioWidget.react.js":27,"./bin/Button.react.js":28,"./bin/Canvas.react.js":29,"./bin/Checkbox.react.js":30,"./bin/Divider.react.js":31,"./bin/Dropdown.react.js":32,"./bin/InfoCard.react.js":33,"./bin/Modal.react.js":34,"./bin/NumberField.react.js":35,"./bin/Plot.react.js":36,"./bin/QuitButton.react.js":37,"./bin/RadioPicker.react.js":38,"./bin/Slider.react.js":39,"./bin/Table.react.js":40,"./bin/plotReducer.js":41}],43:[function(require,module,exports){
 'use strict';
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -3683,7 +3751,7 @@ module.exports = {
   getEntityPositions: getEntityPositions,
   entityInsideGrid: entityInsideGrid
 };
-},{"./helpers":43,"./math":44,"./vectors":47}],43:[function(require,module,exports){
+},{"./helpers":44,"./math":45,"./vectors":48}],44:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -3830,7 +3898,7 @@ module.exports = {
   deepCopy: deepCopy,
   throttle: throttle
 };
-},{"./vectors":47}],44:[function(require,module,exports){
+},{"./vectors":48}],45:[function(require,module,exports){
 "use strict";
 
 var clamp = function clamp(val, min, max) {
@@ -3875,7 +3943,7 @@ module.exports = {
   clamp: clamp,
   subtractWithDeficit: subtractWithDeficit
 };
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 
 function isIpad() {
@@ -3901,7 +3969,7 @@ module.exports = {
   isIpad: isIpad,
   isMobile: isMobile
 };
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 "use strict";
 
 var floor = Math.floor,
@@ -3956,7 +4024,7 @@ module.exports = {
   oneOf: oneOf,
   weightedOneOf: weightedOneOf
 };
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -4155,7 +4223,7 @@ module.exports = {
   rotate: rotate,
   abs: abs
 };
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 
 module.exports = {
   vectors: require('./bin/vectors'),
@@ -4166,7 +4234,7 @@ module.exports = {
   math: require('./bin/math'),
 }
 
-},{"./bin/gridHelpers":42,"./bin/helpers":43,"./bin/math":44,"./bin/platform":45,"./bin/stochastic":46,"./bin/vectors":47}],49:[function(require,module,exports){
+},{"./bin/gridHelpers":43,"./bin/helpers":44,"./bin/math":45,"./bin/platform":46,"./bin/stochastic":47,"./bin/vectors":48}],50:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -4258,7 +4326,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function (process){(function (){
 /** @license React v17.0.2
  * react-dom.development.js
@@ -30524,7 +30592,7 @@ exports.version = ReactVersion;
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":63,"object-assign":49,"react":55,"scheduler":61,"scheduler/tracing":62}],51:[function(require,module,exports){
+},{"_process":64,"object-assign":50,"react":56,"scheduler":62,"scheduler/tracing":63}],52:[function(require,module,exports){
 /** @license React v17.0.2
  * react-dom.production.min.js
  *
@@ -30823,7 +30891,7 @@ exports.findDOMNode=function(a){if(null==a)return null;if(1===a.nodeType)return 
 exports.render=function(a,b,c){if(!rk(b))throw Error(y(200));return tk(null,a,b,!1,c)};exports.unmountComponentAtNode=function(a){if(!rk(a))throw Error(y(40));return a._reactRootContainer?(Xj(function(){tk(null,null,a,!1,function(){a._reactRootContainer=null;a[ff]=null})}),!0):!1};exports.unstable_batchedUpdates=Wj;exports.unstable_createPortal=function(a,b){return uk(a,b,2<arguments.length&&void 0!==arguments[2]?arguments[2]:null)};
 exports.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!rk(c))throw Error(y(200));if(null==a||void 0===a._reactInternals)throw Error(y(38));return tk(a,b,c,!1,d)};exports.version="17.0.2";
 
-},{"object-assign":49,"react":55,"scheduler":61}],52:[function(require,module,exports){
+},{"object-assign":50,"react":56,"scheduler":62}],53:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -30865,7 +30933,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":50,"./cjs/react-dom.production.min.js":51,"_process":63}],53:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":51,"./cjs/react-dom.production.min.js":52,"_process":64}],54:[function(require,module,exports){
 (function (process){(function (){
 /** @license React v17.0.2
  * react.development.js
@@ -33202,7 +33270,7 @@ exports.version = ReactVersion;
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":63,"object-assign":49}],54:[function(require,module,exports){
+},{"_process":64,"object-assign":50}],55:[function(require,module,exports){
 /** @license React v17.0.2
  * react.production.min.js
  *
@@ -33227,7 +33295,7 @@ key:d,ref:k,props:e,_owner:h}};exports.createContext=function(a,b){void 0===b&&(
 exports.lazy=function(a){return{$$typeof:v,_payload:{_status:-1,_result:a},_init:Q}};exports.memo=function(a,b){return{$$typeof:u,type:a,compare:void 0===b?null:b}};exports.useCallback=function(a,b){return S().useCallback(a,b)};exports.useContext=function(a,b){return S().useContext(a,b)};exports.useDebugValue=function(){};exports.useEffect=function(a,b){return S().useEffect(a,b)};exports.useImperativeHandle=function(a,b,c){return S().useImperativeHandle(a,b,c)};
 exports.useLayoutEffect=function(a,b){return S().useLayoutEffect(a,b)};exports.useMemo=function(a,b){return S().useMemo(a,b)};exports.useReducer=function(a,b,c){return S().useReducer(a,b,c)};exports.useRef=function(a){return S().useRef(a)};exports.useState=function(a){return S().useState(a)};exports.version="17.0.2";
 
-},{"object-assign":49}],55:[function(require,module,exports){
+},{"object-assign":50}],56:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -33238,7 +33306,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react.development.js":53,"./cjs/react.production.min.js":54,"_process":63}],56:[function(require,module,exports){
+},{"./cjs/react.development.js":54,"./cjs/react.production.min.js":55,"_process":64}],57:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -33972,7 +34040,7 @@ exports.createStore = createStore;
 exports.legacy_createStore = legacy_createStore;
 
 }).call(this)}).call(this,require('_process'))
-},{"@babel/runtime/helpers/objectSpread2":25,"_process":63}],57:[function(require,module,exports){
+},{"@babel/runtime/helpers/objectSpread2":26,"_process":64}],58:[function(require,module,exports){
 (function (process){(function (){
 /** @license React v0.20.2
  * scheduler-tracing.development.js
@@ -34323,7 +34391,7 @@ exports.unstable_wrap = unstable_wrap;
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":63}],58:[function(require,module,exports){
+},{"_process":64}],59:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler-tracing.production.min.js
  *
@@ -34334,7 +34402,7 @@ exports.unstable_wrap = unstable_wrap;
  */
 'use strict';var b=0;exports.__interactionsRef=null;exports.__subscriberRef=null;exports.unstable_clear=function(a){return a()};exports.unstable_getCurrent=function(){return null};exports.unstable_getThreadID=function(){return++b};exports.unstable_subscribe=function(){};exports.unstable_trace=function(a,d,c){return c()};exports.unstable_unsubscribe=function(){};exports.unstable_wrap=function(a){return a};
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 (function (process){(function (){
 /** @license React v0.20.2
  * scheduler.development.js
@@ -34984,7 +35052,7 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":63}],60:[function(require,module,exports){
+},{"_process":64}],61:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler.production.min.js
  *
@@ -35006,7 +35074,7 @@ exports.unstable_next=function(a){switch(P){case 1:case 2:case 3:var b=3;break;d
 exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();"object"===typeof c&&null!==c?(c=c.delay,c="number"===typeof c&&0<c?d+c:d):c=d;switch(a){case 1:var e=-1;break;case 2:e=250;break;case 5:e=1073741823;break;case 4:e=1E4;break;default:e=5E3}e=c+e;a={id:N++,callback:b,priorityLevel:a,startTime:c,expirationTime:e,sortIndex:-1};c>d?(a.sortIndex=c,H(M,a),null===J(L)&&a===J(M)&&(S?h():S=!0,g(U,c-d))):(a.sortIndex=e,H(L,a),R||Q||(R=!0,f(V)));return a};
 exports.unstable_wrapCallback=function(a){var b=P;return function(){var c=P;P=b;try{return a.apply(this,arguments)}finally{P=c}}};
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -35017,7 +35085,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/scheduler.development.js":59,"./cjs/scheduler.production.min.js":60,"_process":63}],62:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":60,"./cjs/scheduler.production.min.js":61,"_process":64}],63:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -35028,7 +35096,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/scheduler-tracing.development.js":57,"./cjs/scheduler-tracing.production.min.js":58,"_process":63}],63:[function(require,module,exports){
+},{"./cjs/scheduler-tracing.development.js":58,"./cjs/scheduler-tracing.production.min.js":59,"_process":64}],64:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 

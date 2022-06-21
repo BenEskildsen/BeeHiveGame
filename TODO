@@ -1,6 +1,6 @@
 
 - workers w/roles and tasks
-  - roles:
+  - tasks:
     - standby
       - random movement
     - feeding larva
@@ -16,7 +16,7 @@
     - retrieving food
       - leave screen for certain amount of time
       - come back (with certain probability) with food
-  - how to assign roles?
+  - how to assign tasks?
     - dance placeholder
 - other economics
   - nectar -> honey

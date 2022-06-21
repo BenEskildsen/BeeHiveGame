@@ -8,6 +8,9 @@ const {
   entityStartCurrentAction,
 } = require('../simulation/actionOperations');
 const {
+  agentDecideAction,
+} = require('../simulation/agentOperations');
+const {
   add, subtract, equals, vectorTheta, scale,
 } = require('bens_utils').vectors;
 const {
@@ -71,9 +74,9 @@ const doTick = (game: Game): Game => {
 
   // these are the ECS "systems"
   keepControlledMoving(game);
+  updateAgents(game);
   updateActors(game);
   updateMaturing(game);
-  // updateAgents(game);
   updateViewPos(game, false /*don't clamp to world*/);
 
   render(game);
@@ -86,7 +89,7 @@ const doTick = (game: Game): Game => {
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Updating Agents
+// Updating Actors/Agents
 //////////////////////////////////////////////////////////////////////////
 
 const updateActors = (game): void => {
@@ -103,7 +106,7 @@ const updateActors = (game): void => {
     }
 
     if (actor.isAgent) {
-      // fn = agentDecideAction;
+      fn = agentDecideAction;
     }
     stepAction(game, actor, fn);
   }

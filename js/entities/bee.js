@@ -39,7 +39,18 @@ const config = {
     effectIndex: 3 * 45,
     spriteOrder: [],
   },
+  WAIT: {
+    duration: 45 * 4,
+    spriteOrder: [],
+  },
 };
+
+export type Task =
+  {type: 'STANDBY'} |
+  {type: 'FEED_LARVA', foodPos: Vector, larvaPos: Vector} |
+  {type: 'BUILD_CELL', cellPos: Vector} |
+  {type: 'SCOUT', scoutPos: Vector, timeOffScreen: number} |
+  {type: 'RETRIEVE_FOOD', foodPos: Vector, timeOffScreen: number};
 
 const make = (
   position: Vector,
@@ -53,8 +64,7 @@ const make = (
     actions: [],
     holding: null,
     holdingIDs: [], // treat holding like a stack
-    role: null,
-    task: 'WANDER',
+    task: {type: 'STANDBY'},
     dance: null,
   };
 }

@@ -25,9 +25,19 @@ const getPositionInFront = (game, entity) => {
   return entity.position;
 };
 
+const getNeighboringPositions = (game, entity) => {
+  return [
+    add(entity.position, {x: -1, y: 0}),
+    add(entity.position, {x: -0.5, y: -1}),
+    add(entity.position, {x: 0.5, y: -1}),
+    add(entity.position, {x: 1, y: 0}),
+    add(entity.position, {x: 0.5, y: 1}),
+    add(entity.position, {x: -0.5, y: 1}),
+  ];
+};
+
 const getCellInFront = (game, entity) => {
   const pos = getPositionInFront(game, entity);
-  console.log(pos, encodePosition(pos), game.grid[encodePosition(pos)]);
   for (const e of game.grid[encodePosition(pos)]) {
     if (e.type == 'CELL') {
       return e;
@@ -35,6 +45,7 @@ const getCellInFront = (game, entity) => {
   }
   return null;
 };
+
 
 const onScreen = (game, entity) => {
   let {viewPos, viewWidth, viewHeight} = game;
@@ -115,6 +126,7 @@ const getInterpolatedTheta = (entity: Entity) => {
 module.exports = {
   getPositionInFront,
   getCellInFront,
+  getNeighboringPositions,
   onScreen,
   isFacing,
   thetaToDir,

@@ -88,7 +88,7 @@ const doMove = (game: Game, entity: Entity, nextPos: Vector): boolean => {
       cancelAction(game, entity);
       entity.actions.unshift(makeAction(game, entity, 'MOVE_TURN', {nextTheta, nextPos}));
     } else {
-      entity.actions.unshift(makeAction(game, entity, 'TURN', nextTheta));
+      stackAction(game, entity, makeAction(game, entity, 'TURN', {nextTheta}));
     }
     entityStartCurrentAction(game, entity);
     return false;
@@ -159,6 +159,12 @@ const isActionTypeQueued = (
     }
   }
   return false;
+};
+
+const stackAction = (game, entity, action) => {
+  entity.actions[0].index = 0;
+  entity.actions[0].effectDone = false;
+  entity.actions.unshift(action);
 };
 
 const cancelAction = (game: Game, entity: Entity): void => {
