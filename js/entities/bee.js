@@ -59,6 +59,10 @@ const config = {
     duration: 45 * 24,
     effectIndex: 45 * 23,
   },
+  ASSIGN_TASKS_IN_RADIUS: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23,
+  }
 };
 
 export type Task =
@@ -151,6 +155,20 @@ const render = (ctx, game: Game, bee: Bee) => {
     ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
     ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
 
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // task assignment radius
+  if (bee.actions.length > 0 && bee.actions[0].type == 'ASSIGN_TASKS_IN_RADIUS') {
+    ctx.save();
+    const radius = bee.actions[0].payload.radius;
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 0.1;
+    ctx.beginPath();
+    ctx.arc(bee.position.x + width / 2, bee.position.y + height / 2, radius, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.stroke();
 

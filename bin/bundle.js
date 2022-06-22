@@ -248,6 +248,10 @@ var config = {
   SCOUT: {
     duration: 45 * 24,
     effectIndex: 45 * 23
+  },
+  ASSIGN_TASKS_IN_RADIUS: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23
   }
 };
 
@@ -335,6 +339,20 @@ var render = function render(ctx, game, bee) {
     ctx.lineTo(pos.x + cellWidth / 2, pos.y + cellHeight * 0.666 + cellHeight / 3);
     ctx.lineTo(pos.x, pos.y + cellHeight * 0.666);
 
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // task assignment radius
+  if (bee.actions.length > 0 && bee.actions[0].type == 'ASSIGN_TASKS_IN_RADIUS') {
+    ctx.save();
+    var radius = bee.actions[0].payload.radius;
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 0.1;
+    ctx.beginPath();
+    ctx.arc(bee.position.x + width / 2, bee.position.y + height / 2, radius, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.stroke();
 
@@ -1560,7 +1578,8 @@ var _require$vectors = require('bens_utils').vectors,
     subtract = _require$vectors.subtract,
     vectorTheta = _require$vectors.vectorTheta,
     equals = _require$vectors.equals,
-    scale = _require$vectors.scale;
+    scale = _require$vectors.scale,
+    dist = _require$vectors.dist;
 
 var _require$helpers = require('bens_utils').helpers,
     closeTo = _require$helpers.closeTo,
@@ -1620,6 +1639,9 @@ var entityStartCurrentAction = function entityStartCurrentAction(game, entity) {
       break;
     case 'SCOUT':
       scoutFood(game, entity);
+      break;
+    case 'ASSIGN_TASKS_IN_RADIUS':
+      assignTasksInRadius(game, entity, curAction.payload.task, curAction.payload.radius);
       break;
   }
 };
@@ -1697,10 +1719,11 @@ var layEgg = function layEgg(game, entity) {
 
 var makeBlueprint = function makeBlueprint(game, entity) {
   var targetCell = getCellInFront(game, entity);
-  console.log(targetCell);
   if (targetCell != null) return false;
+  var pos = getPositionInFront(game, entity);
+  if (game.grid[encodePosition(pos)].length > 0) return false;
 
-  var blueprint = Entities.BLUEPRINT.make(getPositionInFront(game, entity));
+  var blueprint = Entities.BLUEPRINT.make(pos);
   addEntity(game, blueprint);
   return true;
 };
@@ -1727,6 +1750,42 @@ var scoutFood = function scoutFood(game, entity) {
   bee.task.doneScouting = true;
 };
 
+var assignTasksInRadius = function assignTasksInRadius(game, entity, task, radius) {
+  var beesInRadius = [];
+  for (var beeID in game.BEE) {
+    var _bee = game.entities[beeID];
+    if (game.controlledEntity && game.controlledEntity.id == _bee.id) continue;
+    if (dist(entity.position, _bee.position) <= radius && _bee.task.type == 'STANDBY') {
+      beesInRadius.push(_bee);
+    }
+  }
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = beesInRadius[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _bee2 = _step.value;
+
+      _bee2.task = { type: task };
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+};
+
 //-------------------------------------------------------------------
 // Action Queue
 //-------------------------------------------------------------------
@@ -1750,13 +1809,13 @@ var isActionTypeQueued = function isActionTypeQueued(entity, actionType, almostD
   if (entity.actions == null) {
     return false;
   }
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
 
   try {
-    for (var _iterator = entity.actions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var action = _step.value;
+    for (var _iterator2 = entity.actions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var action = _step2.value;
 
       if (action.type == actionType) {
         if (almostDone && action.duration <= 16) {
@@ -1766,16 +1825,16 @@ var isActionTypeQueued = function isActionTypeQueued(entity, actionType, almostD
       }
     }
   } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
       }
     } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
+      if (_didIteratorError2) {
+        throw _iteratorError2;
       }
     }
   }
@@ -2247,7 +2306,8 @@ var React = require('react');
 
 var _require = require('bens_ui_components'),
     Button = _require.Button,
-    Canvas = _require.Canvas;
+    Canvas = _require.Canvas,
+    Modal = _require.Modal;
 
 var _require2 = require('../daemons/keyboardControlsDaemon'),
     initKeyboardControlsDaemon = _require2.initKeyboardControlsDaemon;
@@ -2325,6 +2385,96 @@ function registerHotkeys(dispatch) {
       if (!game.controlledEntity) return;
       var entityAction = makeAction(game, game.controlledEntity, 'MAKE_BLUEPRINT', {});
       s.dispatch({ type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction: entityAction });
+    }
+  });
+
+  dispatch({
+    type: 'SET_HOTKEY', press: 'onKeyDown',
+    key: 'D',
+    fn: function fn(s) {
+      var game = s.getState().game;
+      if (!game.controlledEntity) return;
+      var dispatch = s.dispatch;
+
+
+      dispatch({ type: 'STOP_TICK' });
+      dispatch({
+        type: 'SET_MODAL',
+        modal: React.createElement(Modal, {
+          title: "Choose Task",
+          body: React.createElement(
+            'div',
+            null,
+            React.createElement(
+              'div',
+              null,
+              React.createElement(Button, {
+                label: 'Feed Larva',
+                onClick: function onClick() {
+                  dispatch({ type: 'DISMISS_MODAL' });
+                  dispatch({ type: 'START_TICK' });
+                  var entityAction = makeAction(game, game.controlledEntity, 'ASSIGN_TASKS_IN_RADIUS', { radius: 5, task: 'FEED_LARVA' });
+                  dispatch({ type: 'QUEUE_ACTION',
+                    entity: game.controlledEntity, entityAction: entityAction
+                  });
+                }
+              })
+            ),
+            React.createElement(
+              'div',
+              null,
+              React.createElement(Button, {
+                label: 'Build Cells',
+                onClick: function onClick() {
+                  dispatch({ type: 'DISMISS_MODAL' });
+                  dispatch({ type: 'START_TICK' });
+                  var entityAction = makeAction(game, game.controlledEntity, 'ASSIGN_TASKS_IN_RADIUS', { radius: 5, task: 'BUILD_CELL' });
+                  dispatch({ type: 'QUEUE_ACTION',
+                    entity: game.controlledEntity, entityAction: entityAction
+                  });
+                }
+              })
+            ),
+            React.createElement(
+              'div',
+              null,
+              React.createElement(Button, {
+                label: 'Scout for Food',
+                onClick: function onClick() {
+                  dispatch({ type: 'DISMISS_MODAL' });
+                  dispatch({ type: 'START_TICK' });
+                  var entityAction = makeAction(game, game.controlledEntity, 'ASSIGN_TASKS_IN_RADIUS', { radius: 5, task: 'SCOUT' });
+                  dispatch({ type: 'QUEUE_ACTION',
+                    entity: game.controlledEntity, entityAction: entityAction
+                  });
+                }
+              })
+            ),
+            React.createElement(
+              'div',
+              null,
+              React.createElement(Button, {
+                label: 'Retrieve Food',
+                onClick: function onClick() {
+                  dispatch({ type: 'DISMISS_MODAL' });
+                  dispatch({ type: 'START_TICK' });
+                  var entityAction = makeAction(game, game.controlledEntity, 'ASSIGN_TASKS_IN_RADIUS', { radius: 5, task: 'RETRIEVE_FOOD' });
+                  dispatch({ type: 'QUEUE_ACTION',
+                    entity: game.controlledEntity, entityAction: entityAction
+                  });
+                }
+              })
+            )
+          ),
+          buttons: [{
+            label: 'Cancel',
+            onClick: function onClick() {
+              dispatch({ type: 'DISMISS_MODAL' });
+              dispatch({ type: 'START_TICK' });
+            }
+          }]
+        })
+      });
     }
   });
 }

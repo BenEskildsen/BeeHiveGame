@@ -4,7 +4,7 @@ const {
   pickupEntity, putdownEntity, addEntity, removeEntity,
 } = require('./entityOperations');
 const {
-  add, subtract, vectorTheta, equals, scale,
+  add, subtract, vectorTheta, equals, scale, dist,
 } = require('bens_utils').vectors;
 const {
   closeTo,
@@ -61,6 +61,11 @@ const entityStartCurrentAction = (
       break;
     case 'SCOUT':
       scoutFood(game, entity);
+      break;
+    case 'ASSIGN_TASKS_IN_RADIUS':
+      assignTasksInRadius(
+        game, entity, curAction.payload.task, curAction.payload.radius,
+      );
       break;
   }
 };
@@ -139,8 +144,10 @@ const layEgg = (game, entity) => {
 const makeBlueprint = (game, entity) => {
   const targetCell = getCellInFront(game, entity);
   if (targetCell != null) return false;
+  const pos = getPositionInFront(game, entity);
+  if (game.grid[encodePosition(pos)].length > 0) return false;
 
-  const blueprint = Entities.BLUEPRINT.make(getPositionInFront(game, entity));
+  const blueprint = Entities.BLUEPRINT.make(pos);
   addEntity(game, blueprint);
   return true;
 };
@@ -165,6 +172,21 @@ const scoutFood = (game, entity) => {
   // TODO die with certain probability when scouting for food
 
   bee.task.doneScouting = true;
+};
+
+const assignTasksInRadius = (game, entity, task, radius) => {
+  const beesInRadius = [];
+  for (const beeID in game.BEE) {
+    const bee = game.entities[beeID];
+    if (game.controlledEntity && game.controlledEntity.id == bee.id) continue;
+    if (dist(entity.position, bee.position) <= radius && bee.task.type == 'STANDBY') {
+      beesInRadius.push(bee);
+    }
+  }
+
+  for (const bee of beesInRadius) {
+    bee.task = {type: task};
+  }
 };
 
 //-------------------------------------------------------------------
