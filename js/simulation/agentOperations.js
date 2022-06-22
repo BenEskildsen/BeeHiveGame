@@ -23,18 +23,23 @@ const agentDecideAction = (game, agent) => {
   switch (bee.task.type) {
     case 'STANDBY': {
       standbyTask(game, bee);
+      break;
     }
     case 'FEED_LARVA': {
       feedLarvaTask(game, bee);
+      break;
     }
     case 'BUILD_CELL': {
-      // TODO: implement build cell task
+      buildCellTask(game, bee);
+      break;
     }
     case 'SCOUT': {
       // TODO: implement scout task
+      break;
     }
     case 'RETRIEVE_FOOD': {
       // TODO: implement retrieve food task
+      break;
     }
   }
 };
@@ -67,6 +72,7 @@ const feedLarvaTask = (game, bee) => {
       const nextTheta = vectorTheta(subtract(bee.position, nextPos));
       bee.actions.push(makeAction(game, bee, 'TURN', {nextTheta}));
       bee.actions.push(makeAction(game, bee, 'PUTDOWN'));
+      // TODO: what to do if feeding larva fails because it was already fed
       // TODO: what to do when done feeding larva
       bee.task.foodPos = null;
       bee.task.larvaPos = null;
@@ -94,6 +100,27 @@ const feedLarvaTask = (game, bee) => {
     }
   }
   // TODO: handle if bee is holding something other than honey in feed larva
+
+};
+
+
+const buildCellTask = (game, bee) => {
+  if (bee.task.cellPos == null && Object.values(game.BLUEPRINT).length > 0) {
+    bee.task.cellPos = oneOf(Object.values(game.BLUEPRINT)).position;
+  }
+  if (bee.task.cellPos != null) {
+    if (equals(bee.position, bee.task.cellPos)) {
+      bee.actions.push(makeAction(game, bee, 'BUILD'));
+      // TODO: what to do when done with build task
+      bee.task.cellPos = null;
+    } else {
+      const nextPos = getNextPositionInPath(bee.position, bee.task.cellPos);
+      bee.actions.push(makeAction(game, bee, 'MOVE', {nextPos}));
+    }
+  } else {
+    // TODO: what to do if there are no more blueprints
+    bee.actions.push(makeAction(game, bee, 'WAIT'));
+  }
 
 };
 

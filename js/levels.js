@@ -36,6 +36,12 @@ const loadLevel = (store, levelName): void => {
       if (x == 14 && y == 14) {
         holding = Entities.HONEY.make();
       }
+      if (x == 14.5 && y == 13) {
+        holding = Entities.HONEY.make();
+      }
+      if (x == 15 && y == 14) {
+        holding = Entities.HONEY.make();
+      }
       if (x == 12 && y == 11) {
         holding = Entities.HONEY.make();
       }
@@ -44,11 +50,12 @@ const loadLevel = (store, levelName): void => {
       }
       dispatch({
         type: 'CREATE_ENTITY',
-        entityType: 'CELL',
+        entityType: y < 15 ? 'CELL' : 'BLUEPRINT',
         args: [{x: adjX, y}, holding],
       });
     }
   }
+
 
 };
 

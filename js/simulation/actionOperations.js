@@ -1,13 +1,14 @@
 // @flow
 
 const {
-  pickupEntity, putdownEntity, addEntity,
+  pickupEntity, putdownEntity, addEntity, removeEntity,
 } = require('./entityOperations');
 const {
   add, subtract, vectorTheta, equals, scale,
 } = require('bens_utils').vectors;
 const {
   closeTo,
+  encodePosition,
   // thetaToDir, // NOTE: not using because we're in a hex grid
 } = require('bens_utils').helpers;
 const {isFacing, thetaToDir, getCellInFront} = require('../selectors');
@@ -47,6 +48,9 @@ const entityStartCurrentAction = (
       break;
     case 'LAY_EGG':
       layEgg(game, entity);
+      break;
+    case 'BUILD':
+      buildCell(game, entity);
       break;
   }
 };
@@ -120,6 +124,14 @@ const layEgg = (game, entity) => {
   addEntity(game, egg);
   targetCell.holding = egg;
   return true;
+};
+
+const buildCell = (game, entity) => {
+  const blueprint = game.grid[encodePosition(entity.position)][0];
+  if (blueprint != null && blueprint.type == 'BLUEPRINT') {
+    removeEntity(game, blueprint);
+    addEntity(game, Entities.CELL.make(entity.position));
+  }
 };
 
 //-------------------------------------------------------------------

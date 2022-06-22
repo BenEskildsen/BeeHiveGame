@@ -42,6 +42,10 @@ const config = {
     duration: 45 * 4,
     spriteOrder: [],
   },
+  BUILD: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23,
+  },
 };
 
 export type Task =
@@ -62,7 +66,7 @@ const make = (
     id: -1, // NOTE: this should be set by the reducer
     actions: [],
     holding: null,
-    task: {type: 'FEED_LARVA'},
+    task: {type: 'BUILD_CELL'},
     dance: null,
   };
 }

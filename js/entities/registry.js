@@ -10,6 +10,7 @@
 const Entities = {
   BACKGROUND: require('./background.js'),
 
+  BLUEPRINT: require('./blueprint.js'),
   CELL: require('./cell.js'),
   HONEY: require('./honey.js'),
   EGG: require('./egg.js'),
