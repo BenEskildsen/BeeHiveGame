@@ -38,11 +38,24 @@ const config = {
     effectIndex: 3 * 45,
     spriteOrder: [],
   },
+  MAKE_BLUEPRINT: {
+    duration: 45 * 10,
+    effectIndex: 3 * 45,
+    spriteOrder: [],
+  },
   WAIT: {
     duration: 45 * 4,
     spriteOrder: [],
   },
   BUILD: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23,
+  },
+  COLLECT_FOOD: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23,
+  },
+  SCOUT: {
     duration: 45 * 24,
     effectIndex: 45 * 23,
   },
@@ -52,8 +65,8 @@ export type Task =
   {type: 'STANDBY'} |
   {type: 'FEED_LARVA', foodPos: Vector, larvaPos: Vector} |
   {type: 'BUILD_CELL', cellPos: Vector} |
-  {type: 'SCOUT', scoutPos: Vector, timeOffScreen: number} |
-  {type: 'RETRIEVE_FOOD', foodPos: Vector, timeOffScreen: number};
+  {type: 'SCOUT', scoutPos: Vector, cellPos: Vector} |
+  {type: 'RETRIEVE_FOOD', foodPos: Vector, cellPos: Vector};
 
 const make = (
   position: Vector,
@@ -66,7 +79,7 @@ const make = (
     id: -1, // NOTE: this should be set by the reducer
     actions: [],
     holding: null,
-    task: {type: 'BUILD_CELL'},
+    task: {type: 'STANDBY'},
     dance: null,
   };
 }

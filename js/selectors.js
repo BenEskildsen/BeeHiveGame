@@ -50,6 +50,17 @@ const getCellInFront = (game, entity) => {
 };
 
 
+const getEmptyCells = (game) => {
+  const emptyCells = [];
+  for (const cellID in game.CELL) {
+    if (game.CELL[cellID].holding == null) {
+      emptyCells.push(game.CELL[cellID]);
+    }
+  }
+  return emptyCells;
+};
+
+
 const getNextPositionInPath = (currentPos, targetPos) => {
   const diff = subtract(currentPos, targetPos);
   const theta = vectorTheta(diff);
@@ -59,14 +70,20 @@ const getNextPositionInPath = (currentPos, targetPos) => {
 
 
 const onScreen = (game, entity) => {
-  let {viewPos, viewWidth, viewHeight} = game;
+  let {viewPos, viewWidth, viewHeight, gridWidth, gridHeight} = game;
   const {position, width, height} = entity;
   const {x, y} = position;
 
-  return (x + width) >= viewPos.x - 1 &&
+  const onScreen = (x + width) >= viewPos.x - 1 &&
     (y + height) >= viewPos.y - 1 &&
     x <= viewWidth + viewPos.x + 1 &&
     y <= viewHeight + viewPos.y + 1;
+
+  const inWorld =
+    x >= 0 && x < gridWidth &&
+    y >= 0 && y < gridHeight;
+
+  return onScreen && inWorld;
 };
 
 
@@ -80,7 +97,8 @@ const isFacing = (entity: Entity, position: Vector): boolean => {
 // hex grid
 const thetaToDir = (theta) => {
   const directions = ['left', 'upleft', 'upright', 'right', 'downright', 'downleft'];
-  const deg = Math.round(theta * 180 / Math.PI);
+  let deg = Math.round(theta * 180 / Math.PI);
+  if (deg < 0) deg += 360;
   return directions[Math.round(deg / 60) % 6];
 };
 
@@ -140,6 +158,7 @@ const getInterpolatedTheta = (entity: Entity) => {
 const exports = {
   getPositionInFront,
   getCellInFront,
+  getEmptyCells,
   getNextPositionInPath,
   getNeighboringPositions,
   onScreen,

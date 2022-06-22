@@ -61,6 +61,17 @@ function registerHotkeys(dispatch) {
       s.dispatch({type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction});
     }
   });
+
+  dispatch({
+    type: 'SET_HOTKEY', press: 'onKeyDown',
+    key: 'C',
+    fn: (s) => {
+      const game = s.getState().game;
+      if (!game.controlledEntity) return;
+      const entityAction = makeAction(game, game.controlledEntity, 'MAKE_BLUEPRINT', {});
+      s.dispatch({type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction});
+    }
+  });
 }
 
 module.exports = Game;

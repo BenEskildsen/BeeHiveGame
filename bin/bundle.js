@@ -228,11 +228,24 @@ var config = {
     effectIndex: 3 * 45,
     spriteOrder: []
   },
+  MAKE_BLUEPRINT: {
+    duration: 45 * 10,
+    effectIndex: 3 * 45,
+    spriteOrder: []
+  },
   WAIT: {
     duration: 45 * 4,
     spriteOrder: []
   },
   BUILD: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23
+  },
+  COLLECT_FOOD: {
+    duration: 45 * 24,
+    effectIndex: 45 * 23
+  },
+  SCOUT: {
     duration: 45 * 24,
     effectIndex: 45 * 23
   }
@@ -246,7 +259,7 @@ var make = function make(position) {
     id: -1, // NOTE: this should be set by the reducer
     actions: [],
     holding: null,
-    task: { type: 'BUILD_CELL' },
+    task: { type: 'STANDBY' },
     dance: null
   });
 };
@@ -679,7 +692,7 @@ var loadLevel = function loadLevel(store, levelName) {
   dispatch({
     type: 'CREATE_ENTITY',
     entityType: 'BACKGROUND',
-    args: [{ x: 0, y: 0 }, 50, 50, 0]
+    args: [{ x: 0, y: 0 }, 25, 25, 0]
   });
 
   dispatch({
@@ -692,6 +705,11 @@ var loadLevel = function loadLevel(store, levelName) {
     type: 'CREATE_ENTITY',
     entityType: 'BEE',
     args: [{ x: 11.5, y: 11 }]
+  });
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'BEE',
+    args: [{ x: 12.5, y: 11 }]
   });
 
   for (var y = 10; y < 16; y++) {
@@ -1405,6 +1423,16 @@ var getCellInFront = function getCellInFront(game, entity) {
   return null;
 };
 
+var getEmptyCells = function getEmptyCells(game) {
+  var emptyCells = [];
+  for (var cellID in game.CELL) {
+    if (game.CELL[cellID].holding == null) {
+      emptyCells.push(game.CELL[cellID]);
+    }
+  }
+  return emptyCells;
+};
+
 var getNextPositionInPath = function getNextPositionInPath(currentPos, targetPos) {
   var diff = subtract(currentPos, targetPos);
   var theta = vectorTheta(diff);
@@ -1415,7 +1443,9 @@ var getNextPositionInPath = function getNextPositionInPath(currentPos, targetPos
 var onScreen = function onScreen(game, entity) {
   var viewPos = game.viewPos,
       viewWidth = game.viewWidth,
-      viewHeight = game.viewHeight;
+      viewHeight = game.viewHeight,
+      gridWidth = game.gridWidth,
+      gridHeight = game.gridHeight;
   var position = entity.position,
       width = entity.width,
       height = entity.height;
@@ -1423,7 +1453,11 @@ var onScreen = function onScreen(game, entity) {
       y = position.y;
 
 
-  return x + width >= viewPos.x - 1 && y + height >= viewPos.y - 1 && x <= viewWidth + viewPos.x + 1 && y <= viewHeight + viewPos.y + 1;
+  var onScreen = x + width >= viewPos.x - 1 && y + height >= viewPos.y - 1 && x <= viewWidth + viewPos.x + 1 && y <= viewHeight + viewPos.y + 1;
+
+  var inWorld = x >= 0 && x < gridWidth && y >= 0 && y < gridHeight;
+
+  return onScreen && inWorld;
 };
 
 var isFacing = function isFacing(entity, position) {
@@ -1436,6 +1470,7 @@ var isFacing = function isFacing(entity, position) {
 var thetaToDir = function thetaToDir(theta) {
   var directions = ['left', 'upleft', 'upright', 'right', 'downright', 'downleft'];
   var deg = Math.round(theta * 180 / Math.PI);
+  if (deg < 0) deg += 360;
   return directions[Math.round(deg / 60) % 6];
 };
 
@@ -1497,6 +1532,7 @@ var getInterpolatedTheta = function getInterpolatedTheta(entity) {
 var _exports = {
   getPositionInFront: getPositionInFront,
   getCellInFront: getCellInFront,
+  getEmptyCells: getEmptyCells,
   getNextPositionInPath: getNextPositionInPath,
   getNeighboringPositions: getNeighboringPositions,
   onScreen: onScreen,
@@ -1531,6 +1567,7 @@ var _require$helpers = require('bens_utils').helpers,
     encodePosition = _require$helpers.encodePosition;
 
 var _require2 = require('../selectors'),
+    getPositionInFront = _require2.getPositionInFront,
     isFacing = _require2.isFacing,
     thetaToDir = _require2.thetaToDir,
     getCellInFront = _require2.getCellInFront;
@@ -1564,7 +1601,6 @@ var entityStartCurrentAction = function entityStartCurrentAction(game, entity) {
         break;
       }
     case 'TURN':
-      // TODO: turning left will briefly say couldn't find position in front for some reason
       rotateEntity(game, entity, curAction.payload.nextTheta);
       break;
     case 'WAIT':
@@ -1573,8 +1609,17 @@ var entityStartCurrentAction = function entityStartCurrentAction(game, entity) {
     case 'LAY_EGG':
       layEgg(game, entity);
       break;
+    case 'MAKE_BLUEPRINT':
+      makeBlueprint(game, entity);
+      break;
     case 'BUILD':
       buildCell(game, entity);
+      break;
+    case 'COLLECT_FOOD':
+      collectFood(game, entity);
+      break;
+    case 'SCOUT':
+      scoutFood(game, entity);
       break;
   }
 };
@@ -1650,12 +1695,36 @@ var layEgg = function layEgg(game, entity) {
   return true;
 };
 
+var makeBlueprint = function makeBlueprint(game, entity) {
+  var targetCell = getCellInFront(game, entity);
+  console.log(targetCell);
+  if (targetCell != null) return false;
+
+  var blueprint = Entities.BLUEPRINT.make(getPositionInFront(game, entity));
+  addEntity(game, blueprint);
+  return true;
+};
+
 var buildCell = function buildCell(game, entity) {
   var blueprint = game.grid[encodePosition(entity.position)][0];
   if (blueprint != null && blueprint.type == 'BLUEPRINT') {
     removeEntity(game, blueprint);
     addEntity(game, Entities.CELL.make(entity.position));
   }
+};
+
+var collectFood = function collectFood(game, entity) {
+  // TODO die with certain probability when collecting food
+
+  var honey = Entities.HONEY.make(entity);
+  addEntity(game, honey);
+  entity.holding = honey;
+};
+
+var scoutFood = function scoutFood(game, entity) {
+  // TODO die with certain probability when scouting for food
+
+  bee.task.doneScouting = true;
 };
 
 //-------------------------------------------------------------------
@@ -1753,13 +1822,18 @@ var _require = require('../simulation/actionOperations'),
     isActionTypeQueued = _require.isActionTypeQueued,
     entityStartCurrentAction = _require.entityStartCurrentAction;
 
+var _require2 = require('../simulation/entityOperations'),
+    addEntity = _require2.addEntity;
+
 var _require$stochastic = require('bens_utils').stochastic,
     oneOf = _require$stochastic.oneOf,
-    weightedOneOf = _require$stochastic.weightedOneOf;
+    weightedOneOf = _require$stochastic.weightedOneOf,
+    randomIn = _require$stochastic.randomIn;
 
-var _require2 = require('../selectors'),
-    getNeighboringPositions = _require2.getNeighboringPositions,
-    getNextPositionInPath = _require2.getNextPositionInPath;
+var _require3 = require('../selectors'),
+    getNeighboringPositions = _require3.getNeighboringPositions,
+    getNextPositionInPath = _require3.getNextPositionInPath,
+    getEmptyCells = _require3.getEmptyCells;
 
 var _require$vectors = require('bens_utils').vectors,
     equals = _require$vectors.equals,
@@ -1793,12 +1867,12 @@ var agentDecideAction = function agentDecideAction(game, agent) {
       }
     case 'SCOUT':
       {
-        // TODO: implement scout task
+        scoutTask(game, bee);
         break;
       }
     case 'RETRIEVE_FOOD':
       {
-        // TODO: implement retrieve food task
+        retrieveFoodTask(game, bee);
         break;
       }
   }
@@ -1831,10 +1905,7 @@ var feedLarvaTask = function feedLarvaTask(game, bee) {
       bee.actions.push(makeAction(game, bee, 'TURN', { nextTheta: nextTheta }));
       bee.actions.push(makeAction(game, bee, 'PUTDOWN'));
       // TODO: what to do if feeding larva fails because it was already fed
-      // TODO: what to do when done feeding larva
-      bee.task.foodPos = null;
-      bee.task.larvaPos = null;
-      // bee.task = {type: 'STANDBY'};
+      bee.task = { type: 'STANDBY' };
     } else {
       bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
     }
@@ -1867,22 +1938,98 @@ var buildCellTask = function buildCellTask(game, bee) {
   if (bee.task.cellPos != null) {
     if (equals(bee.position, bee.task.cellPos)) {
       bee.actions.push(makeAction(game, bee, 'BUILD'));
-      // TODO: what to do when done with build task
-      bee.task.cellPos = null;
+      bee.task = { type: 'STANDBY' };
     } else {
       var nextPos = getNextPositionInPath(bee.position, bee.task.cellPos);
       bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
     }
   } else {
-    // TODO: what to do if there are no more blueprints
-    bee.actions.push(makeAction(game, bee, 'WAIT'));
+    // no more blueprints
+    bee.task = { type: 'STANDBY' };
+  }
+};
+
+var scoutTask = function scoutTask(game, bee) {
+  if (bee.task.doneScouting) {
+    if (bee.task.cellPos == null) {
+      bee.task.cellPos = oneOf(Object.values(game.CELL)).position;
+    }
+
+    if (bee.task.cellPos != null) {
+      var nextPos = getNextPositionInPath(bee.position, bee.task.cellPos);
+      if (equals(nextPos, bee.task.cellPos)) {
+        // TODO: make some sort of tracking of food locations and assign here
+        bee.task = { type: 'STANDBY' };
+      } else {
+        bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
+      }
+    }
+  } else {
+
+    if (bee.task.scoutPos == null) {
+      var y = randomIn(0, game.gridHeight);
+      var x = y % 2 == 0 ? game.gridWidth : game.gridWidth + 0.5;
+      bee.task.scoutPos = { x: x, y: y };
+    }
+
+    if (bee.task.scoutPos != null) {
+      if (equals(bee.position, bee.task.scoutPos)) {
+        bee.actions.push(makeAction(game, bee, 'SCOUT'));
+      } else {
+        var _nextPos2 = getNextPositionInPath(bee.position, bee.task.scoutPos);
+        bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: _nextPos2 }));
+      }
+    }
+  }
+};
+
+var retrieveFoodTask = function retrieveFoodTask(game, bee) {
+  // go out
+  if (!bee.holding) {
+    // TODO: foodPos should be assigned when the task gets assigned
+    if (bee.task.foodPos == null) {
+      var y = randomIn(0, game.gridHeight);
+      var x = y % 2 == 0 ? game.gridWidth : game.gridWidth + 0.5;
+      bee.task.foodPos = { x: x, y: y };
+    }
+    if (bee.task.foodPos != null) {
+      if (equals(bee.position, bee.task.foodPos)) {
+        bee.actions.push(makeAction(game, bee, 'COLLECT_FOOD'));
+      } else {
+        var nextPos = getNextPositionInPath(bee.position, bee.task.foodPos);
+        bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
+      }
+    }
+  } else {
+    // come back
+    if (bee.task.cellPos == null) {
+      var emptyCells = getEmptyCells(game);
+      if (emptyCells.length > 0) {
+        bee.task.cellPos = oneOf(emptyCells).position;
+      } else {
+        // TODO: what to do if there are no empty cells
+      }
+    }
+
+    if (bee.task.cellPos != null) {
+      var _nextPos3 = getNextPositionInPath(bee.position, bee.task.cellPos);
+      if (equals(_nextPos3, bee.task.cellPos)) {
+        var nextTheta = vectorTheta(subtract(bee.position, _nextPos3));
+        bee.actions.push(makeAction(game, bee, 'TURN', { nextTheta: nextTheta }));
+        bee.actions.push(makeAction(game, bee, 'PUTDOWN'));
+        // TODO: what to do if putting down honey fails because cell is occupied
+        bee.task = { type: 'STANDBY' };
+      } else {
+        bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: _nextPos3 }));
+      }
+    }
   }
 };
 
 module.exports = {
   agentDecideAction: agentDecideAction
 };
-},{"../selectors":19,"../simulation/actionOperations":20,"bens_utils":50}],22:[function(require,module,exports){
+},{"../selectors":19,"../simulation/actionOperations":20,"../simulation/entityOperations":22,"bens_utils":50}],22:[function(require,module,exports){
 'use strict';
 
 var _require = require('../entities/registry'),
@@ -2166,6 +2313,17 @@ function registerHotkeys(dispatch) {
       var game = s.getState().game;
       if (!game.controlledEntity) return;
       var entityAction = makeAction(game, game.controlledEntity, 'LAY_EGG', {});
+      s.dispatch({ type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction: entityAction });
+    }
+  });
+
+  dispatch({
+    type: 'SET_HOTKEY', press: 'onKeyDown',
+    key: 'C',
+    fn: function fn(s) {
+      var game = s.getState().game;
+      if (!game.controlledEntity) return;
+      var entityAction = makeAction(game, game.controlledEntity, 'MAKE_BLUEPRINT', {});
       s.dispatch({ type: 'QUEUE_ACTION', entity: game.controlledEntity, entityAction: entityAction });
     }
   });

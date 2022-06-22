@@ -11,7 +11,7 @@ const loadLevel = (store, levelName): void => {
   dispatch({
     type: 'CREATE_ENTITY',
     entityType: 'BACKGROUND',
-    args: [{x: 0, y: 0}, 50, 50, 0],
+    args: [{x: 0, y: 0}, 25, 25, 0],
   });
 
   dispatch({
@@ -24,6 +24,11 @@ const loadLevel = (store, levelName): void => {
     type: 'CREATE_ENTITY',
     entityType: 'BEE',
     args: [{x: 11.5, y: 11}],
+  });
+  dispatch({
+    type: 'CREATE_ENTITY',
+    entityType: 'BEE',
+    args: [{x: 12.5, y: 11}],
   });
 
   for (let y = 10; y < 16; y++) {

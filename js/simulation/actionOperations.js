@@ -11,7 +11,9 @@ const {
   encodePosition,
   // thetaToDir, // NOTE: not using because we're in a hex grid
 } = require('bens_utils').helpers;
-const {isFacing, thetaToDir, getCellInFront} = require('../selectors');
+const {
+ getPositionInFront,  isFacing, thetaToDir, getCellInFront,
+} = require('../selectors');
 const {Entities} = require('../entities/registry');
 
 const entityStartCurrentAction = (
@@ -40,7 +42,6 @@ const entityStartCurrentAction = (
       break;
     }
     case 'TURN':
-      // TODO: turning left will briefly say couldn't find position in front for some reason
       rotateEntity(game, entity, curAction.payload.nextTheta);
       break;
     case 'WAIT':
@@ -49,8 +50,17 @@ const entityStartCurrentAction = (
     case 'LAY_EGG':
       layEgg(game, entity);
       break;
+    case 'MAKE_BLUEPRINT':
+      makeBlueprint(game, entity);
+      break;
     case 'BUILD':
       buildCell(game, entity);
+      break;
+    case 'COLLECT_FOOD':
+      collectFood(game, entity);
+      break;
+    case 'SCOUT':
+      scoutFood(game, entity);
       break;
   }
 };
@@ -126,12 +136,35 @@ const layEgg = (game, entity) => {
   return true;
 };
 
+const makeBlueprint = (game, entity) => {
+  const targetCell = getCellInFront(game, entity);
+  if (targetCell != null) return false;
+
+  const blueprint = Entities.BLUEPRINT.make(getPositionInFront(game, entity));
+  addEntity(game, blueprint);
+  return true;
+};
+
 const buildCell = (game, entity) => {
   const blueprint = game.grid[encodePosition(entity.position)][0];
   if (blueprint != null && blueprint.type == 'BLUEPRINT') {
     removeEntity(game, blueprint);
     addEntity(game, Entities.CELL.make(entity.position));
   }
+};
+
+const collectFood = (game, entity) => {
+  // TODO die with certain probability when collecting food
+
+  const honey = Entities.HONEY.make(entity);
+  addEntity(game, honey);
+  entity.holding = honey;
+};
+
+const scoutFood = (game, entity) => {
+  // TODO die with certain probability when scouting for food
+
+  bee.task.doneScouting = true;
 };
 
 //-------------------------------------------------------------------

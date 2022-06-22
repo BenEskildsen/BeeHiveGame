@@ -1,21 +1,5 @@
 
 - workers w/roles and tasks
-  - tasks:
-    - standby
-      - random movement
-    - feeding larva
-      - track food need
-      - find honey and pick it up
-      - find larva and drop it off
-    - building cells
-      - assign areas for building
-      - go to area and do an action there
-    - scouting for food
-      - leave screen for certain amount of time
-      - come back (with certain probability) with info about food
-    - retrieving food
-      - leave screen for certain amount of time
-      - come back (with certain probability) with food
   - how to assign tasks?
     - dance placeholder
 
@@ -26,16 +10,16 @@
 - all movements (standby cadence, etc). should be in time with music
 
 
-./simulation/actionOperations.js:      // TODO: turning left will briefly say couldn't find position in front for some reason
 ./simulation/actionOperations.js:  // TODO: move should check for inGrid entities
 ./simulation/actionOperations.js:  // TODO: implement canDoMove
-./simulation/agentOperations.js:      // TODO: implement scout task
-./simulation/agentOperations.js:      // TODO: implement retrieve food task
+./simulation/actionOperations.js:  // TODO die with certain probability when collecting food
+./simulation/actionOperations.js:  // TODO die with certain probability when scouting for food
 ./simulation/agentOperations.js:      // TODO: for feeding larva - might be no larva or no larva in a cell
 ./simulation/agentOperations.js:      // TODO: what to do if feeding larva fails because it was already fed
-./simulation/agentOperations.js:      // TODO: what to do when done feeding larva
 ./simulation/agentOperations.js:      // TODO: for feeding larva - what to do if there's no honey
 ./simulation/agentOperations.js:  // TODO: handle if bee is holding something other than honey in feed larva
-./simulation/agentOperations.js:      // TODO: what to do when done with build task
-./simulation/agentOperations.js:    // TODO: what to do if there are no more blueprints
+./simulation/agentOperations.js:        // TODO: make some sort of tracking of food locations and assign here
+./simulation/agentOperations.js:    // TODO: foodPos should be assigned when the task gets assigned
+./simulation/agentOperations.js:        // TODO: what to do if there are no empty cells
+./simulation/agentOperations.js:        // TODO: what to do if putting down honey fails because cell is occupied
 ./reducers/tickReducer.js:  // TODO: clampToGrid doesn't work without stuttering
