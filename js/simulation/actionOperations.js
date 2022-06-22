@@ -136,7 +136,7 @@ const makeAction = (
     effectIndex: 0,
     ...config[actionType],
     index: 0,
-    payload,
+    payload: payload == null ? {} : payload,
     effectDone: false,
   };
 

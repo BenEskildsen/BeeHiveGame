@@ -7,23 +7,25 @@ const {encodePosition} = require('bens_utils').helpers;
 
 const getPositionInFront = (game, entity) => {
   const dir = thetaToDir(entity.theta);
+  return add(entity.position, getPositionInDir(dir));
+};
+
+const getPositionInDir = (dir) => {
   switch (dir) {
     case 'left':
-      return add(entity.position, {x: -1, y: 0});
+      return {x: -1, y: 0};
     case 'upleft':
-      return add(entity.position, {x: -0.5, y: -1});
+      return {x: -0.5, y: -1};
     case 'upright':
-      return add(entity.position, {x: 0.5, y: -1});
+      return {x: 0.5, y: -1};
     case 'right':
-      return add(entity.position, {x: 1, y: 0});
+      return {x: 1, y: 0};
     case 'downright':
-      return add(entity.position, {x: 0.5, y: 1});
+      return {x: 0.5, y: 1};
     case 'downleft':
-      return add(entity.position, {x: -0.5, y: 1});
+      return {x: -0.5, y: 1};
   }
-  console.log("couldn't find position in front", entity.position, entity.theta, dir);
-  return entity.position;
-};
+}
 
 const getNeighboringPositions = (game, entity) => {
   return [
@@ -36,6 +38,7 @@ const getNeighboringPositions = (game, entity) => {
   ];
 };
 
+
 const getCellInFront = (game, entity) => {
   const pos = getPositionInFront(game, entity);
   for (const e of game.grid[encodePosition(pos)]) {
@@ -44,6 +47,14 @@ const getCellInFront = (game, entity) => {
     }
   }
   return null;
+};
+
+
+const getNextPositionInPath = (currentPos, targetPos) => {
+  const diff = subtract(currentPos, targetPos);
+  const theta = vectorTheta(diff);
+  const dir = thetaToDir(theta);
+  return add(currentPos, getPositionInDir(dir));
 };
 
 
@@ -58,10 +69,12 @@ const onScreen = (game, entity) => {
     y <= viewHeight + viewPos.y + 1;
 };
 
+
 const isFacing = (entity: Entity, position: Vector): boolean => {
   const nextDir = thetaToDir(vectorTheta(subtract(entity.position, position)));
   return nextDir == thetaToDir(entity.theta);
 }
+
 
 // supersedes thetaToDir from the bens_utils package since we're working with a
 // hex grid
@@ -70,6 +83,7 @@ const thetaToDir = (theta) => {
   const deg = Math.round(theta * 180 / Math.PI);
   return directions[Math.round(deg / 60) % 6];
 };
+
 
 const getInterpolatedPosition = (entity): Vector => {
   if (!entity.actions) return entity.position;
@@ -123,9 +137,10 @@ const getInterpolatedTheta = (entity: Entity) => {
   return theta;
 };
 
-module.exports = {
+const exports = {
   getPositionInFront,
   getCellInFront,
+  getNextPositionInPath,
   getNeighboringPositions,
   onScreen,
   isFacing,
@@ -133,3 +148,6 @@ module.exports = {
   getInterpolatedPosition,
   getInterpolatedTheta,
 };
+
+window.selectors = exports;
+module.exports = exports;

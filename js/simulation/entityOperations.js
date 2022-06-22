@@ -27,6 +27,7 @@ const addEntity = (game: Game, entity: Entity): Game => {
     if (entity.holding.id == -1 || !game.entities[entity.holding.id]) {
       addEntity(game, entity.holding);
     }
+    entity.holding.heldIn = entity;
     entity.holding.position = null;
   }
 
@@ -98,6 +99,7 @@ const putdownEntity = (game: Game, entity: Entity): boolean => {
       removeEntity(game, targetCell.holding);
       targetCell.holding = pupa;
 
+      removeEntity(game, entity.holding);
       entity.holding = null;
       return true;
     }

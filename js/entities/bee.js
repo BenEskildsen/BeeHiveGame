@@ -8,7 +8,6 @@ const config = {
 
   width: 1,
   height: 1,
-  maxHold: 1,
   age: 0,
 
   isActor: true,
@@ -63,8 +62,7 @@ const make = (
     id: -1, // NOTE: this should be set by the reducer
     actions: [],
     holding: null,
-    holdingIDs: [], // treat holding like a stack
-    task: {type: 'STANDBY'},
+    task: {type: 'FEED_LARVA'},
     dance: null,
   };
 }

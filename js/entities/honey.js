@@ -4,19 +4,17 @@ const config = {
   type: 'HONEY',
   width: 1,
   height: 1,
-  maxQuantity: 100,
 };
 
 const make = (
-  quantity: ?number,
-  position: ?Vector,
+  heldIn: Entity,
 ): Cell => {
   return {
     ...config,
     id: -1,
-    position,
+    position: null,
     theta: 0,
-    quantity: quantity != null ? quantity : 100,
+    heldIn,
   };
 };
 

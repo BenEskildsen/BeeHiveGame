@@ -198,7 +198,6 @@ var config = {
 
   width: 1,
   height: 1,
-  maxHold: 1,
   age: 0,
 
   isActor: true,
@@ -243,8 +242,7 @@ var make = function make(position) {
     id: -1, // NOTE: this should be set by the reducer
     actions: [],
     holding: null,
-    holdingIDs: [], // treat holding like a stack
-    task: { type: 'STANDBY' },
+    task: { type: 'FEED_LARVA' },
     dance: null
   });
 };
@@ -434,7 +432,7 @@ var config = {
   width: 1,
   height: 1,
   isMaturing: true,
-  maturationAge: 45 * 1000
+  maturationAge: 5 * 1000
 };
 
 var make = function make(heldIn) {
@@ -465,16 +463,15 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 var config = {
   type: 'HONEY',
   width: 1,
-  height: 1,
-  maxQuantity: 100
+  height: 1
 };
 
-var make = function make(quantity, position) {
+var make = function make(heldIn) {
   return _extends({}, config, {
     id: -1,
-    position: position,
+    position: null,
     theta: 0,
-    quantity: quantity != null ? quantity : 100
+    heldIn: heldIn
   });
 };
 
@@ -643,11 +640,14 @@ var loadLevel = function loadLevel(store, levelName) {
     args: [{ x: 11.5, y: 11 }]
   });
 
-  for (var y = 10; y < 13; y++) {
-    for (var x = 10; x < 15; x++) {
+  for (var y = 10; y < 16; y++) {
+    for (var x = 10; x < 18; x++) {
       var adjX = y % 2 == 1 ? x + 0.5 : x;
       var holding = null;
       if (x == 12 && y == 12) {
+        holding = Entities.HONEY.make();
+      }
+      if (x == 14 && y == 14) {
         holding = Entities.HONEY.make();
       }
       if (x == 12 && y == 11) {
@@ -1289,22 +1289,24 @@ var encodePosition = require('bens_utils').helpers.encodePosition;
 
 var getPositionInFront = function getPositionInFront(game, entity) {
   var dir = thetaToDir(entity.theta);
+  return add(entity.position, getPositionInDir(dir));
+};
+
+var getPositionInDir = function getPositionInDir(dir) {
   switch (dir) {
     case 'left':
-      return add(entity.position, { x: -1, y: 0 });
+      return { x: -1, y: 0 };
     case 'upleft':
-      return add(entity.position, { x: -0.5, y: -1 });
+      return { x: -0.5, y: -1 };
     case 'upright':
-      return add(entity.position, { x: 0.5, y: -1 });
+      return { x: 0.5, y: -1 };
     case 'right':
-      return add(entity.position, { x: 1, y: 0 });
+      return { x: 1, y: 0 };
     case 'downright':
-      return add(entity.position, { x: 0.5, y: 1 });
+      return { x: 0.5, y: 1 };
     case 'downleft':
-      return add(entity.position, { x: -0.5, y: 1 });
+      return { x: -0.5, y: 1 };
   }
-  console.log("couldn't find position in front", entity.position, entity.theta, dir);
-  return entity.position;
 };
 
 var getNeighboringPositions = function getNeighboringPositions(game, entity) {
@@ -1341,6 +1343,13 @@ var getCellInFront = function getCellInFront(game, entity) {
   }
 
   return null;
+};
+
+var getNextPositionInPath = function getNextPositionInPath(currentPos, targetPos) {
+  var diff = subtract(currentPos, targetPos);
+  var theta = vectorTheta(diff);
+  var dir = thetaToDir(theta);
+  return add(currentPos, getPositionInDir(dir));
 };
 
 var onScreen = function onScreen(game, entity) {
@@ -1425,9 +1434,10 @@ var getInterpolatedTheta = function getInterpolatedTheta(entity) {
   return theta;
 };
 
-module.exports = {
+var _exports = {
   getPositionInFront: getPositionInFront,
   getCellInFront: getCellInFront,
+  getNextPositionInPath: getNextPositionInPath,
   getNeighboringPositions: getNeighboringPositions,
   onScreen: onScreen,
   isFacing: isFacing,
@@ -1435,6 +1445,9 @@ module.exports = {
   getInterpolatedPosition: getInterpolatedPosition,
   getInterpolatedTheta: getInterpolatedTheta
 };
+
+window.selectors = _exports;
+module.exports = _exports;
 },{"bens_utils":49}],19:[function(require,module,exports){
 'use strict';
 
@@ -1583,7 +1596,7 @@ var makeAction = function makeAction(game, entity, actionType, payload) {
     effectIndex: 0
   }, config[actionType], {
     index: 0,
-    payload: payload,
+    payload: payload == null ? {} : payload,
     effectDone: false
   });
 
@@ -1671,7 +1684,15 @@ var _require$stochastic = require('bens_utils').stochastic,
     weightedOneOf = _require$stochastic.weightedOneOf;
 
 var _require2 = require('../selectors'),
-    getNeighboringPositions = _require2.getNeighboringPositions;
+    getNeighboringPositions = _require2.getNeighboringPositions,
+    getNextPositionInPath = _require2.getNextPositionInPath;
+
+var _require$vectors = require('bens_utils').vectors,
+    equals = _require$vectors.equals,
+    vectorTheta = _require$vectors.vectorTheta,
+    add = _require$vectors.add,
+    subtract = _require$vectors.subtract,
+    scale = _require$vectors.scale;
 
 var agentDecideAction = function agentDecideAction(game, agent) {
   if (game.controlledEntity && game.controlledEntity.id == agent.id) return;
@@ -1683,22 +1704,80 @@ var agentDecideAction = function agentDecideAction(game, agent) {
   switch (bee.task.type) {
     case 'STANDBY':
       {
-        if (Math.random() < 0.8) {
-          bee.actions.push(makeAction(game, bee, 'WAIT', {}));
-        } else {
-          var nextPos = oneOf(getNeighboringPositions(game, bee));
-          bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
-        }
+        standbyTask(game, bee);
       }
     case 'FEED_LARVA':
-      {}
+      {
+        feedLarvaTask(game, bee);
+      }
     case 'BUILD_CELL':
-      {}
+      {
+        // TODO: implement build cell task
+      }
     case 'SCOUT':
-      {}
+      {
+        // TODO: implement scout task
+      }
     case 'RETRIEVE_FOOD':
-      {}
+      {
+        // TODO: implement retrieve food task
+      }
   }
+};
+
+var standbyTask = function standbyTask(game, bee) {
+  if (Math.random() < 0.85) {
+    bee.actions.push(makeAction(game, bee, 'WAIT'));
+  } else {
+    var nextPos = oneOf(getNeighboringPositions(game, bee));
+    bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
+  }
+};
+
+var feedLarvaTask = function feedLarvaTask(game, bee) {
+  // if holding honey then take it to a larva
+  if (bee.holding && bee.holding.type == 'HONEY') {
+    // select larva to feed
+    if (bee.task.larvaPos == null && Object.keys(game.LARVA).length > 0) {
+      bee.task.larvaPos = oneOf(Object.values(game.LARVA)).heldIn.position;
+    } else if (Object.keys(game.LARVA).length == 0) {
+      // TODO: for feeding larva - might be no larva or no larva in a cell
+      bee.actions.push(makeAction(game, bee, 'WAIT'));
+      return;
+    }
+    // feed the larva if you're at it or else move towards it
+    var nextPos = getNextPositionInPath(bee.position, bee.task.larvaPos);
+    if (equals(nextPos, bee.task.larvaPos)) {
+      var nextTheta = vectorTheta(subtract(bee.position, nextPos));
+      bee.actions.push(makeAction(game, bee, 'TURN', { nextTheta: nextTheta }));
+      bee.actions.push(makeAction(game, bee, 'PUTDOWN'));
+      // TODO: what to do when done feeding larva
+      bee.task.foodPos = null;
+      bee.task.larvaPos = null;
+      // bee.task = {type: 'STANDBY'};
+    } else {
+      bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: nextPos }));
+    }
+  } else if (!bee.holding) {
+    // select honey to pick up
+    if (bee.task.foodPos == null && Object.keys(game.HONEY).length > 0) {
+      bee.task.foodPos = oneOf(Object.values(game.HONEY)).heldIn.position;
+    } else if (Object.keys(game.HONEY).length == 0) {
+      // TODO: for feeding larva - what to do if there's no honey
+      bee.actions.push(makeAction(game, bee, 'WAIT'));
+      return;
+    }
+    // pick up the honey if you're at it or else move towards it
+    var _nextPos = getNextPositionInPath(bee.position, bee.task.foodPos);
+    if (equals(_nextPos, bee.task.foodPos)) {
+      var _nextTheta = vectorTheta(subtract(bee.position, _nextPos));
+      bee.actions.push(makeAction(game, bee, 'TURN', { nextTheta: _nextTheta }));
+      bee.actions.push(makeAction(game, bee, 'PICKUP'));
+    } else {
+      bee.actions.push(makeAction(game, bee, 'MOVE', { nextPos: _nextPos }));
+    }
+  }
+  // TODO: handle if bee is holding something other than honey in feed larva
 };
 
 module.exports = {
@@ -1739,6 +1818,7 @@ var addEntity = function addEntity(game, entity) {
     if (entity.holding.id == -1 || !game.entities[entity.holding.id]) {
       addEntity(game, entity.holding);
     }
+    entity.holding.heldIn = entity;
     entity.holding.position = null;
   }
 
@@ -1832,6 +1912,7 @@ var putdownEntity = function putdownEntity(game, entity) {
       removeEntity(game, targetCell.holding);
       targetCell.holding = pupa;
 
+      removeEntity(game, entity.holding);
       entity.holding = null;
       return true;
     }
