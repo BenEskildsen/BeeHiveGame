@@ -10,6 +10,17 @@ const rootReducer = (state: State, action: Action): State => {
   if (state === undefined) return initState();
 
   switch (action.type) {
+    case 'SET': {
+      if (!state.game) return state;
+      const {property, value} = action;
+      return {
+        ...state,
+        game: {
+          ...state.game,
+          [property]: value,
+        },
+      };
+    }
     case 'SET_SCREEN': {
       const {screen} = action;
       let game = state.game;

@@ -107,6 +107,15 @@ const render = (ctx, game: Game, bee: Bee) => {
   ctx.fillRect(3 * width / 4, 0, width / 4, height / 4); // right eye
   ctx.fillRect(3 * width / 8, 3 * height / 4, width / 4, height / 2); // stinger
 
+  // entity IDs
+  if (game.showEntityIDs) {
+    ctx.fillStyle = 'red';
+    ctx.font = '1px sans serif';
+    ctx.fillText(
+      parseInt(bee.id), 0, 1, 1,
+    );
+  }
+
   // holding
   if (bee.holding) {
     ctx.lineWidth = 0.1;

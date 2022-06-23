@@ -1,9 +1,12 @@
 // @flow
 
 const React = require('react');
-const {Button, Canvas, Modal} = require('bens_ui_components');
+const {
+  Button, Canvas, Modal, AudioWidget, InfoCard,
+} = require('bens_ui_components');
 const {initKeyboardControlsDaemon} = require('../daemons/keyboardControlsDaemon');
 const {makeAction} = require('../simulation/actionOperations');
+const {config} = require('../config');
 const {useEffect} = React;
 
 function Game(props): React.Node {
@@ -16,10 +19,93 @@ function Game(props): React.Node {
 
   return (
     <div>
+      <MenuCard {...props} />
       <Canvas
         useFullScreen={true}
       />
     </div>
+  );
+}
+
+function MenuCard(props): React.Node {
+  const {state, dispatch} = props;
+  const {game} = state;
+  return (
+    <InfoCard
+      style={{
+        position: 'absolute',
+        top: 4,
+        left: 4,
+        zIndex: 2,
+        backgroundColor: 'none',
+        border: 'none',
+      }}
+    >
+      <div>
+      <Button
+        label={game.tickInterval ? 'Pause' : 'Play'}
+        onClick={() => {
+          if (game.tickInterval) {
+            dispatch({type: 'STOP_TICK'});
+          } else {
+            dispatch({type: 'START_TICK'});
+          }
+        }}
+      />
+      </div>
+      <div>
+      <Button
+        label="Instructions"
+        onClick={() => {
+          dispatch({type: 'STOP_TICK'});
+          dispatch({type: 'SET_MODAL',
+            modal: <InstructionsModal dispatch={dispatch} />
+          });
+        }}
+      />
+      </div>
+      <div>
+        <AudioWidget
+          audioFiles={config.audioFiles}
+          style={{margin: 0}}
+        />
+      </div>
+    </InfoCard>
+  );
+}
+
+function InstructionsModal(props) {
+  const {dispatch} = props;
+  return (
+    <Modal
+      title={"Controls"}
+      body={(<div>
+        <div>
+          Movement (hexagonally): <b>T Y F H V B</b>
+        </div>
+        <div>
+          Pick up/Put down: <b>G</b>
+        </div>
+        <div>
+          Lay eggs: <b>E</b>
+        </div>
+        <div>
+          Create honeycomb blueprints: <b>C</b>
+        </div>
+        <div>
+          Assign tasks to workers: <b>D</b>
+        </div>
+      </div>)}
+      buttons={[
+        {
+          label: 'Back to Game',
+          onClick: () => {
+            dispatch({type: 'DISMISS_MODAL'});
+            dispatch({type: 'START_TICK'});
+          },
+        }
+      ]}
+    />
   );
 }
 

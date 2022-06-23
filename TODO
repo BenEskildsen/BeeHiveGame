@@ -1,11 +1,17 @@
 
+- audio
+  - copy over stuff for playing it
+  - config for setting bpm across all actions
+  - all movements (standby cadence, etc). should be in time with music
+
 - dancing
+
+- bees in standby holding something should just try to put it down
 
 - other economics
   - nectar -> honey
   - additional process for getting honey
 
-- all movements (standby cadence, etc). should be in time with music
 
 
 ./simulation/actionOperations.js:  // TODO: move should check for inGrid entities
