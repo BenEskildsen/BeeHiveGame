@@ -2,13 +2,24 @@
 'use strict';
 
 var config = {
-  bpm: 100,
+  bpm: 180,
 
   audioFiles: [{ path: 'audio/Song Oct. 9.wav', type: 'mp3' }]
+
+};
+
+var framesPerBeat = function framesPerBeat() {
+  return 60 /*fps*/ * 60 /*sec per min*/ / config.bpm;
+};
+
+var millisPerBeat = function millisPerBeat() {
+  return 60 /*sec per min*/ * 1000 /*millis per sec*/ / config.bpm;
 };
 
 module.exports = {
-  config: config
+  config: config,
+  framesPerBeat: framesPerBeat,
+  millisPerBeat: millisPerBeat
 };
 },{}],2:[function(require,module,exports){
 'use strict';
@@ -205,6 +216,9 @@ var subtract = require('bens_utils').vectors.subtract;
 var _require = require('../selectors'),
     getPositionInFront = _require.getPositionInFront;
 
+var _require2 = require('../config'),
+    millisPerBeat = _require2.millisPerBeat;
+
 var config = {
   type: 'BEE',
 
@@ -216,54 +230,54 @@ var config = {
   isAgent: true,
   // action params
   MOVE: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: []
   },
   TURN: {
-    duration: 45 * 6,
+    duration: 1 * millisPerBeat(),
     spriteOrder: []
   },
   MOVE_TURN: {
-    duration: 45 * 5,
+    duration: 1 * millisPerBeat(),
     spriteOrder: []
   },
   PICKUP: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: []
   },
   PUTDOWN: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: []
   },
   LAY_EGG: {
-    duration: 45 * 7,
-    effectIndex: 3 * 45,
+    duration: 4 * millisPerBeat(),
+    effectIndex: 2 * millisPerBeat(),
     spriteOrder: []
   },
   MAKE_BLUEPRINT: {
-    duration: 45 * 10,
-    effectIndex: 3 * 45,
+    duration: 4 * millisPerBeat(),
+    effectIndex: 2 * millisPerBeat(),
     spriteOrder: []
   },
   WAIT: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: []
   },
   BUILD: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23
+    duration: 4 * millisPerBeat(),
+    effectIndex: 3 * millisPerBeat()
   },
   COLLECT_FOOD: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23
+    duration: 16 * millisPerBeat(),
+    effectIndex: 15 * millisPerBeat()
   },
   SCOUT: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23
+    duration: 16 * millisPerBeat(),
+    effectIndex: 15 * millisPerBeat()
   },
   ASSIGN_TASKS_IN_RADIUS: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23
+    duration: 4 * millisPerBeat(),
+    effectIndex: 3 * millisPerBeat()
   }
 };
 
@@ -380,7 +394,7 @@ var render = function render(ctx, game, bee) {
 };
 
 module.exports = { config: config, make: make, render: render };
-},{"../selectors":20,"bens_utils":51}],5:[function(require,module,exports){
+},{"../config":1,"../selectors":20,"bens_utils":51}],5:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };

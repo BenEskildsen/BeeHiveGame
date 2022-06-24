@@ -2,6 +2,9 @@
 
 const {subtract} = require('bens_utils').vectors;
 const {getPositionInFront} = require('../selectors');
+const {
+  millisPerBeat,
+} = require('../config');
 
 const config = {
   type: 'BEE',
@@ -14,54 +17,54 @@ const config = {
   isAgent: true,
   // action params
   MOVE: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: [],
   },
   TURN: {
-    duration: 45 * 6,
+    duration: 1 * millisPerBeat(),
     spriteOrder: [],
   },
   MOVE_TURN: {
-    duration: 45 * 5,
+    duration: 1 * millisPerBeat(),
     spriteOrder: [],
   },
   PICKUP: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: [],
   },
   PUTDOWN: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: [],
   },
   LAY_EGG: {
-    duration: 45 * 7,
-    effectIndex: 3 * 45,
+    duration: 4 * millisPerBeat(),
+    effectIndex: 2 * millisPerBeat(),
     spriteOrder: [],
   },
   MAKE_BLUEPRINT: {
-    duration: 45 * 10,
-    effectIndex: 3 * 45,
+    duration: 4 * millisPerBeat(),
+    effectIndex: 2 * millisPerBeat(),
     spriteOrder: [],
   },
   WAIT: {
-    duration: 45 * 4,
+    duration: 1 * millisPerBeat(),
     spriteOrder: [],
   },
   BUILD: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23,
+    duration: 4 * millisPerBeat(),
+    effectIndex: 3 * millisPerBeat(),
   },
   COLLECT_FOOD: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23,
+    duration: 16 * millisPerBeat(),
+    effectIndex: 15 * millisPerBeat(),
   },
   SCOUT: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23,
+    duration: 16 * millisPerBeat(),
+    effectIndex: 15 * millisPerBeat(),
   },
   ASSIGN_TASKS_IN_RADIUS: {
-    duration: 45 * 24,
-    effectIndex: 45 * 23,
+    duration: 4 * millisPerBeat(),
+    effectIndex: 3 * millisPerBeat(),
   }
 };
 
