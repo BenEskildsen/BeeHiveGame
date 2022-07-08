@@ -17,7 +17,7 @@ const config = {
   isAgent: true,
   // action params
   MOVE: {
-    duration: 1 * millisPerBeat(),
+    duration: 4 * millisPerBeat(),
     spriteOrder: [],
   },
   TURN: {
@@ -25,7 +25,7 @@ const config = {
     spriteOrder: [],
   },
   MOVE_TURN: {
-    duration: 1 * millisPerBeat(),
+    duration: 4 * millisPerBeat(),
     spriteOrder: [],
   },
   PICKUP: {

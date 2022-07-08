@@ -1,10 +1,10 @@
 // @flow
 
 const config = {
-  bpm: 180,
+  bpm: 160,
 
   audioFiles: [
-    {path: 'audio/Song Oct. 9.wav', type: 'mp3'},
+    {path: 'audio/Beat1.m4a', type: 'm4a'},
   ],
 
 

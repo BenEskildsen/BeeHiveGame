@@ -50,7 +50,7 @@ const agentDecideAction = (game, agent) => {
 
 
 const standbyTask = (game, bee) => {
-  if (Math.random() < 0.85) {
+  if (Math.random() < 0) {
     bee.actions.push(makeAction(game, bee, 'WAIT'));
   } else {
     const nextPos = oneOf(getNeighboringPositions(game, bee));

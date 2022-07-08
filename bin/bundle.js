@@ -2,9 +2,9 @@
 'use strict';
 
 var config = {
-  bpm: 180,
+  bpm: 160,
 
-  audioFiles: [{ path: 'audio/Song Oct. 9.wav', type: 'mp3' }]
+  audioFiles: [{ path: 'audio/Beat1.m4a', type: 'm4a' }]
 
 };
 
@@ -230,7 +230,7 @@ var config = {
   isAgent: true,
   // action params
   MOVE: {
-    duration: 1 * millisPerBeat(),
+    duration: 4 * millisPerBeat(),
     spriteOrder: []
   },
   TURN: {
@@ -238,7 +238,7 @@ var config = {
     spriteOrder: []
   },
   MOVE_TURN: {
-    duration: 1 * millisPerBeat(),
+    duration: 4 * millisPerBeat(),
     spriteOrder: []
   },
   PICKUP: {
@@ -1983,7 +1983,7 @@ var agentDecideAction = function agentDecideAction(game, agent) {
 };
 
 var standbyTask = function standbyTask(game, bee) {
-  if (Math.random() < 0.85) {
+  if (Math.random() < 0) {
     bee.actions.push(makeAction(game, bee, 'WAIT'));
   } else {
     var nextPos = oneOf(getNeighboringPositions(game, bee));
